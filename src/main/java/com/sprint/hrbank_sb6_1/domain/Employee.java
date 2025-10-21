@@ -1,14 +1,9 @@
 package com.sprint.hrbank_sb6_1.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import java.sql.Timestamp;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,14 +24,18 @@ public class Employee {
     private String name;
 
     @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false, unique = true)
     private String employeeNumber;
 
     @Column(nullable = false)
     private String position;
 
     @Column(nullable = false)
-    private Timestamp hireDate;
+    private LocalDateTime hireDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EmployeeStatus status;
 
@@ -46,7 +45,5 @@ public class Employee {
 
     @OneToOne
     @JoinColumn(name = "profile_image_id")
-    private File profileImageId;
-
-
+    private File profileImage;
 }
