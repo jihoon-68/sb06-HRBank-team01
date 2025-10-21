@@ -1,7 +1,5 @@
 package com.sprint.hrbank_sb6_1.service.basic;
 
-import com.sprint.hrbank_sb6_1.domain.Backup;
-import com.sprint.hrbank_sb6_1.domain.BackupStatus;
 import com.sprint.hrbank_sb6_1.domain.Employee;
 import com.sprint.hrbank_sb6_1.domain.File;
 import com.sprint.hrbank_sb6_1.event.BackupEvent;
@@ -9,7 +7,6 @@ import com.sprint.hrbank_sb6_1.repository.BackupRepository;
 import com.sprint.hrbank_sb6_1.repository.EmployeeRepository;
 import com.sprint.hrbank_sb6_1.repository.FileRepository;
 import com.sprint.hrbank_sb6_1.service.BackupIoService;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;

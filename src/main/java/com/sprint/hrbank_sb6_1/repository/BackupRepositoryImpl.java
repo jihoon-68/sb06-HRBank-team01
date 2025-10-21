@@ -1,6 +1,5 @@
 package com.sprint.hrbank_sb6_1.repository;
 
-import com.sprint.hrbank_sb6_1.domain.Backup;
 import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;

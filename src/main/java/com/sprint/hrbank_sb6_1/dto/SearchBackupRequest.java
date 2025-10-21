@@ -1,6 +1,5 @@
 package com.sprint.hrbank_sb6_1.dto;
 
-import com.sprint.hrbank_sb6_1.domain.BackupStatus;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 

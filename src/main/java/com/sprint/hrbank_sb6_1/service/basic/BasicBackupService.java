@@ -1,7 +1,5 @@
 package com.sprint.hrbank_sb6_1.service.basic;
 
-import com.sprint.hrbank_sb6_1.domain.Backup;
-import com.sprint.hrbank_sb6_1.domain.BackupStatus;
 import com.sprint.hrbank_sb6_1.dto.BackupDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageBackupDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseBackupDto;
