@@ -1,7 +1,9 @@
 package com.sprint.hrbank_sb6_1.service.storage;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -34,17 +36,25 @@ public class LocalFileStorage implements FileStorage{
   }
 
   @Override
-  public Long putFile(byte[] data, String fileExtension) {
-    return 0L;
+  public void putFile(byte[] data, String fileName)
+  {
+    Path path = rootPath.resolve(fileName);
+    try(FileOutputStream fos = new FileOutputStream(path.toFile());
+        BufferedOutputStream bos = new BufferedOutputStream(fos))
+    {
+      bos.write(data);
+    }
+    catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public InputStream getFile(Long id) {
+  public InputStream getFile(String fileName) {
     try
     {
-       FileInputStream fs = new FileInputStream(rootPath.resolve(id.toString()).toFile());
-      BufferedInputStream bis = new BufferedInputStream(fs);
-      return bis;
+       FileInputStream fs = new FileInputStream(rootPath.resolve(fileName).toFile());
+      return new BufferedInputStream(fs);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

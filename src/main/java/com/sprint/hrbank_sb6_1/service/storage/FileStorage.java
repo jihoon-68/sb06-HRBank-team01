@@ -8,7 +8,7 @@ import java.util.UUID;
 */
 
 public interface FileStorage {
-  Long putFile(byte[] data, String fileExtension);
-  InputStream getFile(Long id);
+  void putFile(byte[] data, String fileName);
+  InputStream getFile(String fileName);
 
 }
