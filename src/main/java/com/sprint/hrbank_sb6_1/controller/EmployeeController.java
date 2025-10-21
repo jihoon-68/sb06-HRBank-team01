@@ -1,9 +1,9 @@
 package com.sprint.hrbank_sb6_1.controller;
 
+import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeUpdateRequest;
-import com.sprint.hrbank_sb6_1.dto.request.FileCreateRequest;
 import com.sprint.hrbank_sb6_1.service.EmployeeService;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
@@ -31,9 +31,9 @@ public class EmployeeController {
     public ResponseEntity<EmployeeDto> createEmployee(HttpServletRequest httpServletRequest,
                                                       @RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
                                                       @RequestPart(value = "profile", required = false) MultipartFile profile) {
-        Optional<FileCreateRequest> fileCreateRequest = Optional.ofNullable(profile)
+        Optional<BinaryContentCreateRequest> binaryContentCreateRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
-        EmployeeDto employeeDto = employeeService.create(getClientIp(httpServletRequest), employeeCreateRequest, fileCreateRequest);
+        EmployeeDto employeeDto = employeeService.create(getClientIp(httpServletRequest), employeeCreateRequest, binaryContentCreateRequest);
         return ResponseEntity.ok().body(employeeDto);
     }
 
@@ -42,23 +42,22 @@ public class EmployeeController {
                                                       @RequestPart("employee") EmployeeUpdateRequest employeeUpdateRequest,
                                                       @RequestPart(value = "profile", required = false) MultipartFile profile,
                                                       HttpServletRequest httpServletRequest) {
-        Optional<FileCreateRequest> fileCreateRequest = Optional.ofNullable(profile)
+        Optional<BinaryContentCreateRequest> fileCreateRequest = Optional.ofNullable(profile)
                 .flatMap(this::resolveProfileRequest);
         EmployeeDto employeeDto = employeeService.update(getClientIp(httpServletRequest), employeeId, employeeUpdateRequest, fileCreateRequest);
         return ResponseEntity.ok().body(employeeDto);
     }
 
-    private Optional<FileCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
+    private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
         if (profileFile.isEmpty()) {
             return Optional.empty();
         } else {
             try {
-                FileCreateRequest fileCreateRequest =
-                        FileCreateRequest.builder()
-                                .size((int) profileFile.getSize())
-                                .name(profileFile.getOriginalFilename())
+                BinaryContentCreateRequest fileCreateRequest =
+                        BinaryContentCreateRequest.builder()
+                                .fileName(profileFile.getOriginalFilename())
                                 .bytes(profileFile.getBytes())
-                                .type(profileFile.getContentType())
+                                .contentType(profileFile.getContentType())
                                 .build();
                 return Optional.of(fileCreateRequest);
             } catch (IOException e) {

@@ -3,16 +3,17 @@ package com.sprint.hrbank_sb6_1.service.basic;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.hrbank_sb6_1.domain.*;
+import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeUpdateRequest;
-import com.sprint.hrbank_sb6_1.dto.request.FileCreateRequest;
 import com.sprint.hrbank_sb6_1.mapper.EmployeeMapper;
 import com.sprint.hrbank_sb6_1.repository.ChangeLogRepository;
 import com.sprint.hrbank_sb6_1.repository.DepartmentRepository;
 import com.sprint.hrbank_sb6_1.repository.EmployeeRepository;
 import com.sprint.hrbank_sb6_1.repository.FileRepository;
 import com.sprint.hrbank_sb6_1.service.EmployeeService;
+import com.sprint.hrbank_sb6_1.service.storage.FileStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,10 +32,11 @@ public class BasicEmployeeService implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final ChangeLogRepository changeLogRepository;
     private final ObjectMapper objectMapper;
+    private final FileStorage  fileStorage;
 
     @Transactional
     @Override
-    public EmployeeDto create(String ip, EmployeeCreateRequest employeeCreateRequest, Optional<FileCreateRequest> optionalFileCreateRequest) {
+    public EmployeeDto create(String ip, EmployeeCreateRequest employeeCreateRequest, Optional<BinaryContentCreateRequest> optionalBinaryContentCreateRequest) {
         if (employeeRepository.existsByEmail(employeeCreateRequest.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일 입니다.");
         }
@@ -42,14 +44,14 @@ public class BasicEmployeeService implements EmployeeService {
         Department department = departmentRepository.findById(employeeCreateRequest.getDepartmentId())
                 .orElseThrow(() -> new NoSuchElementException("부서를 찾을 수 없습니다."));
 
-        File nullableProfile = optionalFileCreateRequest.map(
-                fileCreateRequest -> {
+        File nullableProfile = optionalBinaryContentCreateRequest.map(
+                binaryContentCreateRequest -> {
                     File profile = new File();
-                    profile.setName(fileCreateRequest.getName());
-                    profile.setSize(fileCreateRequest.getSize());
-                    profile.setType(fileCreateRequest.getType());
+                    profile.setName(binaryContentCreateRequest.fileName());
+                    profile.setSize(binaryContentCreateRequest.bytes().length);
+                    profile.setType(binaryContentCreateRequest.contentType());
                     File createdFile = fileRepository.save(profile);
-                    //storage.put
+                    fileStorage.putFile(binaryContentCreateRequest.bytes(), createdFile.getId().toString());
                     return createdFile;
                 }
         ).orElse(null);
@@ -73,7 +75,7 @@ public class BasicEmployeeService implements EmployeeService {
     }
 
     @Override
-    public EmployeeDto update(String ip, Long employeeId, EmployeeUpdateRequest employeeUpdateRequest, Optional<FileCreateRequest> optionalFileCreateRequest) {
+    public EmployeeDto update(String ip, Long employeeId, EmployeeUpdateRequest employeeUpdateRequest, Optional<BinaryContentCreateRequest> optionalBinaryContentCreateRequest) {
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(() ->
                 new NoSuchElementException("직원을 찾을 수 없습니다."));
 
@@ -95,16 +97,16 @@ public class BasicEmployeeService implements EmployeeService {
         Department department = departmentRepository.findById(employeeUpdateRequest.getDepartmentId())
                 .orElseThrow(() -> new NoSuchElementException("부서를 찾을 수 없습니다."));
 
-        File nullableProfile = optionalFileCreateRequest.map(fileCreateRequest -> {
+        File nullableProfile = optionalBinaryContentCreateRequest.map(binaryContentCreateRequest -> {
             File profile = new File();
-            profile.setType(fileCreateRequest.getType());
-            profile.setName(fileCreateRequest.getName());
-            profile.setSize(fileCreateRequest.getSize());
+            profile.setType(binaryContentCreateRequest.contentType());
+            profile.setName(binaryContentCreateRequest.fileName());
+            profile.setSize(binaryContentCreateRequest.bytes().length);
             if (employee.getProfileImage() != null) {
                 fileRepository.deleteById(employee.getProfileImage().getId());
             }
             File createdFile = fileRepository.save(profile);
-            //storage.put
+            fileStorage.putFile(binaryContentCreateRequest.bytes(), createdFile.getId().toString());
             return createdFile;
         }).orElse(null);
 
