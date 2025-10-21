@@ -5,38 +5,29 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
 import java.sql.Timestamp;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-public class Backup {
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+public class Department {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String worker;
-
-    @Column(nullable = false)
-    private Timestamp startedAt;
+    private String name;
 
     @Column
-    private Timestamp endedAt;
+    private String description;
 
     @Column(nullable = false)
-    private BackupStatus status;
-
-    @OneToOne
-    private File file;
-
-
+    private Timestamp establishedDate;
 }

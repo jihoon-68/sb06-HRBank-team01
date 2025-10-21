@@ -5,38 +5,42 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.sql.Timestamp;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-public class Backup {
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+public class ChangeLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String worker;
+    private ChangeLogStatus status;
 
     @Column(nullable = false)
-    private Timestamp startedAt;
+    private String description;
 
     @Column
-    private Timestamp endedAt;
+    private String memo;
 
     @Column(nullable = false)
-    private BackupStatus status;
+    private String address;
 
-    @OneToOne
-    private File file;
+    @Column(nullable = false)
+    private Timestamp at;
 
+    @ManyToOne
+    @JoinColumn(name = "employee_id")
+    private Employee employee;
 
 }
