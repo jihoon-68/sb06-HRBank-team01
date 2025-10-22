@@ -5,13 +5,16 @@ import com.sprint.hrbank_sb6_1.domain.BackupStatus;
 import com.sprint.hrbank_sb6_1.dto.BackupDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseDepartmentDto;
 import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
+import com.sprint.hrbank_sb6_1.event.BackupEvent;
 import com.sprint.hrbank_sb6_1.mapper.BackupMapper;
 import com.sprint.hrbank_sb6_1.mapper.PagingMapper;
 import com.sprint.hrbank_sb6_1.repository.BackupRepository;
 import com.sprint.hrbank_sb6_1.service.BackupService;
 import lombok.AllArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -24,8 +27,10 @@ public class BasicBackupService implements BackupService {
     //생성되면 다시 수정 예정
     //private final ChangeLogRepository changeLogRepository;
     private final PagingMapper pagingMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
+    @Transactional
     public BackupDto CreateBackup(String userIp) {
 
         //백업상태가 성공인 데이터 중에 최근 데이터 조회
@@ -46,6 +51,7 @@ public class BasicBackupService implements BackupService {
             newBackup.setWorker(userIp);
             newBackup.setStatus(BackupStatus.PROGRESS);
             backupRepository.save(newBackup);
+            eventPublisher.publishEvent(new BackupEvent(newBackup.getId()));
             return backupMapper.toBackupDto(newBackup);
         }
 
