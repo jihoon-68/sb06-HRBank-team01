@@ -12,5 +12,5 @@ public interface PagingMapper {
     @Mapping(target = "nextCursor", expression = "java(slice.getContent().get(slice.getContent().size()-1).getStartedAt().toString())")
     @Mapping(target = "nextIdAfter",expression = "java(slice.getContent().get(slice.getContent().size()-1).getId())")
     @Mapping(source = "totalElements",target = "totalElements")
-    CursorPageResponseDepartmentDto<BackupDto> toCursorPageResponseDepartmentDto(Slice<BackupDto> slice, Long totalElements);
+    CursorPageResponseDepartmentDto toCursorPageResponseDepartmentDto(Slice<BackupDto> slice, Long totalElements);
 }
