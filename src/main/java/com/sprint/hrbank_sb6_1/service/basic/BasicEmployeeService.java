@@ -51,7 +51,7 @@ public class BasicEmployeeService implements EmployeeService {
                     profile.setSize(binaryContentCreateRequest.bytes().length);
                     profile.setType(binaryContentCreateRequest.contentType());
                     File createdFile = fileRepository.save(profile);
-                    fileStorage.putFile(binaryContentCreateRequest.bytes(), createdFile.getId().toString());
+                    fileStorage.putFile(binaryContentCreateRequest.bytes(), createdFile.getName());
                     return createdFile;
                 }
         ).orElse(null);
@@ -61,7 +61,7 @@ public class BasicEmployeeService implements EmployeeService {
                 .email(employeeCreateRequest.getEmail())
                 .name(employeeCreateRequest.getName())
                 .department(department)
-                .hireDate(LocalDateTime.parse(employeeCreateRequest.getHireDate()))
+                .hireDate(LocalDate.parse(employeeCreateRequest.getHireDate()))
                 .position(employeeCreateRequest.getPosition())
                 .status(EmployeeStatus.ACTIVE)
                 .profileImage(nullableProfile)
@@ -74,6 +74,7 @@ public class BasicEmployeeService implements EmployeeService {
         return employeeMapper.toDto(createdEmployee);
     }
 
+    @Transactional
     @Override
     public EmployeeDto update(String ip, Long employeeId, EmployeeUpdateRequest employeeUpdateRequest, Optional<BinaryContentCreateRequest> optionalBinaryContentCreateRequest) {
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(() ->
@@ -106,17 +107,14 @@ public class BasicEmployeeService implements EmployeeService {
                 fileRepository.deleteById(employee.getProfileImage().getId());
             }
             File createdFile = fileRepository.save(profile);
-            fileStorage.putFile(binaryContentCreateRequest.bytes(), createdFile.getId().toString());
+            fileStorage.putFile(binaryContentCreateRequest.bytes(), createdFile.getName());
             return createdFile;
         }).orElse(null);
 
-        employee.setDepartment(department);
-        employee.setName(employeeUpdateRequest.getName());
-        employee.setPosition(employeeUpdateRequest.getPosition());
-        employee.setEmail(employeeUpdateRequest.getEmail());
-        employee.setStatus(EmployeeStatus.fromDescription(employeeUpdateRequest.getStatus()));
-        employee.setProfileImage(nullableProfile);
-        employee.setHireDate(LocalDateTime.parse(employeeUpdateRequest.getHireDate()));
+        employee.update(department, employeeUpdateRequest.getName(), employeeUpdateRequest.getPosition(),
+                employeeUpdateRequest.getEmail(), EmployeeStatus.fromDescription(employeeUpdateRequest.getStatus()), nullableProfile,
+                LocalDate.parse(employeeUpdateRequest.getHireDate()));
+
         Employee after = employeeRepository.save(employee);
 
         changeLog(ip, ChangeLogStatus.UPDATED, employeeUpdateRequest.getMemo(), before, after);

@@ -2,6 +2,7 @@ package com.sprint.hrbank_sb6_1.domain;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import lombok.*;
@@ -31,7 +32,7 @@ public class Employee {
     private String position;
 
     @Column(nullable = false)
-    private LocalDateTime hireDate;
+    private LocalDate hireDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -44,4 +45,16 @@ public class Employee {
     @OneToOne
     @JoinColumn(name = "profile_image_id")
     private File profileImage;
+
+    public void update(Department department, String name, String position,
+                       String email, EmployeeStatus status, File profileImage,
+                       LocalDate hireDate) {
+        this.department = department;
+        this.name = name;
+        this.position = position;
+        this.email = email;
+        this.status = status;
+        this.profileImage = profileImage;
+        this.hireDate = hireDate;
+    }
 }
