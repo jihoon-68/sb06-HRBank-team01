@@ -11,4 +11,6 @@ public interface EmployeeService {
     EmployeeDto create(String ip, EmployeeCreateRequest employeeCreateRequest, Optional<BinaryContentCreateRequest> optionalFileCreateRequest);
 
     EmployeeDto update(String ip, Long employeeId, EmployeeUpdateRequest employeeUpdateRequest, Optional<BinaryContentCreateRequest> optionalFileCreateRequest);
+
+    void delete(String ip, Long id);
 }

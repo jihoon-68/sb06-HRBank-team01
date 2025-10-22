@@ -5,9 +5,6 @@ import com.sprint.hrbank_sb6_1.dto.request.EmployeeCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeUpdateRequest;
 import com.sprint.hrbank_sb6_1.service.EmployeeService;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -24,9 +21,6 @@ import java.util.Optional;
 public class EmployeeController {
     private final EmployeeService employeeService;
 
-    @RequestBody(content = @Content(
-            encoding = @Encoding(name = "employee", contentType = MediaType.APPLICATION_JSON_VALUE)
-    ))
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<EmployeeDto> createEmployee(HttpServletRequest httpServletRequest,
                                                       @RequestPart("employee") EmployeeCreateRequest employeeCreateRequest,
@@ -46,6 +40,12 @@ public class EmployeeController {
                 .flatMap(this::resolveProfileRequest);
         EmployeeDto employeeDto = employeeService.update(getClientIp(httpServletRequest), employeeId, employeeUpdateRequest, fileCreateRequest);
         return ResponseEntity.ok().body(employeeDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteEmployee(HttpServletRequest httpServletRequest, @PathVariable(name = "id") Long id) {
+        employeeService.delete(getClientIp(httpServletRequest), id);
+        return ResponseEntity.noContent().build();
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

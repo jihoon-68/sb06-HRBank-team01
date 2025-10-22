@@ -109,17 +109,29 @@ public class BasicEmployeeService implements EmployeeService {
             File createdFile = fileRepository.save(profile);
             fileStorage.putFile(binaryContentCreateRequest.bytes(), createdFile.getName());
             return createdFile;
-        }).orElse(null);
+        }).orElse(employee.getProfileImage());
 
         employee.update(department, employeeUpdateRequest.getName(), employeeUpdateRequest.getPosition(),
                 employeeUpdateRequest.getEmail(), EmployeeStatus.fromDescription(employeeUpdateRequest.getStatus()), nullableProfile,
                 LocalDate.parse(employeeUpdateRequest.getHireDate()));
 
-        Employee after = employeeRepository.save(employee);
+        Employee updatedEmployee = employeeRepository.save(employee);
 
-        changeLog(ip, ChangeLogStatus.UPDATED, employeeUpdateRequest.getMemo(), before, after);
+        changeLog(ip, ChangeLogStatus.UPDATED, employeeUpdateRequest.getMemo(), before, updatedEmployee);
 
-        return employeeMapper.toDto(after);
+        return employeeMapper.toDto(updatedEmployee);
+    }
+
+    @Transactional
+    @Override
+    public void delete(String ip, Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
+        if (employee.getProfileImage() != null) {
+            fileRepository.delete(employee.getProfileImage());
+        }
+        employeeRepository.delete(employee);
+        changeLog(ip, ChangeLogStatus.DELETED, "직원 삭제", employee, new Employee());
     }
 
     private void changeLog(String ip, ChangeLogStatus changeLogStatus, String memo, Employee before, Employee after) {
@@ -189,12 +201,13 @@ public class BasicEmployeeService implements EmployeeService {
             }
 
             String json = objectMapper.writeValueAsString(changeLogList);
+            Employee changeLogEmployee = changeLogStatus == ChangeLogStatus.DELETED ? null : after;
 
             ChangeLog changeLog = ChangeLog.builder()
                     .memo(memo)
                     .at(LocalDateTime.now())
                     .address(ip)
-                    .employee(after)
+                    .employee(changeLogEmployee)
                     .description(json)
                     .status(changeLogStatus)
                     .build();

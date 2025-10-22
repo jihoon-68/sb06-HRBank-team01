@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class EmployeeMapper {
     public EmployeeDto toDto(Employee employee) {
+        Long profileId = employee.getProfileImage() ==  null ? null : employee.getProfileImage().getId();
+
         return EmployeeDto.builder()
                 .id(employee.getId())
                 .departmentId(employee.getDepartment().getId())
@@ -17,7 +19,7 @@ public class EmployeeMapper {
                 .hireDate(employee.getHireDate().toString())
                 .position(employee.getPosition())
                 .status(employee.getStatus().getDescription())
-                .profileImageId(employee.getProfileImage().getId())
+                .profileImageId(profileId)
                 .build();
     }
 }
