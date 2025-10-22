@@ -34,4 +34,14 @@ public interface ChangeLogRepository extends JpaRepository<ChangeLog,Long> {
         @Param("idAfter") Long idAfter,
         Pageable pageable
     );
+
+    @Query("""
+        SELECT COUNT(c) FROM ChangeLog c
+        WHERE (:atFrom IS NULL OR c.at >= :atFrom)
+          AND (:atTo IS NULL OR c.at <= :atTo)
+        """)
+    Long countByAtBetween(
+        @Param("atFrom") LocalDateTime atFrom,
+        @Param("atTo") LocalDateTime atTo
+    );
 }
