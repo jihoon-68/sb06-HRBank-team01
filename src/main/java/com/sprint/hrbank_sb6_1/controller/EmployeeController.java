@@ -48,6 +48,12 @@ public class EmployeeController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<EmployeeDto> getEmployee(@PathVariable(name = "id") Long id) {
+        EmployeeDto employeeDto = employeeService.findById(id);
+        return ResponseEntity.ok().body(employeeDto);
+    }
+
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
         if (profileFile.isEmpty()) {
             return Optional.empty();

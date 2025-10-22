@@ -13,4 +13,6 @@ public interface EmployeeService {
     EmployeeDto update(String ip, Long employeeId, EmployeeUpdateRequest employeeUpdateRequest, Optional<BinaryContentCreateRequest> optionalFileCreateRequest);
 
     void delete(String ip, Long id);
+
+    EmployeeDto findById(Long id);
 }
