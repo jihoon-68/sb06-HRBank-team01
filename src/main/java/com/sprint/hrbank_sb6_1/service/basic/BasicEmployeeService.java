@@ -32,7 +32,7 @@ public class BasicEmployeeService implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final ChangeLogRepository changeLogRepository;
     private final ObjectMapper objectMapper;
-    private final FileStorage  fileStorage;
+    private final FileStorage fileStorage;
 
     @Transactional
     @Override
