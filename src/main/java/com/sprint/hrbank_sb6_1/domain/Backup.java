@@ -6,11 +6,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @AllArgsConstructor
@@ -26,11 +28,12 @@ public class Backup {
     @Column(nullable = false)
     private String worker;
 
+    @CreatedDate
     @Column(nullable = false)
-    private Timestamp startedAt;
+    private LocalDateTime startedAt;
 
     @Column
-    private Timestamp endedAt;
+    private LocalDateTime endedAt;
 
     @Column(nullable = false)
     private BackupStatus status;
