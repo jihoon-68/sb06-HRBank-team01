@@ -7,7 +7,7 @@ import com.sprint.hrbank_sb6_1.dto.CursorPageResponseDepartmentDto;
 import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
 import com.sprint.hrbank_sb6_1.event.BackupEvent;
 import com.sprint.hrbank_sb6_1.mapper.BackupMapper;
-import com.sprint.hrbank_sb6_1.mapper.PagingMapper;
+import com.sprint.hrbank_sb6_1.mapper.BackupPagingMapper;
 import com.sprint.hrbank_sb6_1.repository.BackupRepository;
 import com.sprint.hrbank_sb6_1.service.BackupService;
 import lombok.AllArgsConstructor;
@@ -24,9 +24,9 @@ import java.time.LocalDateTime;
 public class BasicBackupService implements BackupService {
     private final BackupRepository backupRepository;
     private final BackupMapper backupMapper;
+    private final BackupPagingMapper backupPagingMapper;
     //생성되면 다시 수정 예정
     //private final ChangeLogRepository changeLogRepository;
-    private final PagingMapper pagingMapper;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -63,11 +63,11 @@ public class BasicBackupService implements BackupService {
     }
 
     @Override
-    public CursorPageResponseDepartmentDto<BackupDto> GetAllBackups(SearchBackupRequest searchBackupRequest) {
+    public CursorPageResponseDepartmentDto GetAllBackups(SearchBackupRequest searchBackupRequest) {
         long totalCount = backupRepository.countTasks(searchBackupRequest);
         Slice<Backup> backupSlice = backupRepository.searchTasks(searchBackupRequest);
         Slice<BackupDto> backupDtoSlice = backupSlice.map(backupMapper::toBackupDto);
-        return pagingMapper.toCursorPageResponseDepartmentDto(backupDtoSlice,totalCount);
+        return backupPagingMapper.toCursorPageResponseDepartmentDto(backupDtoSlice,totalCount);
 
     }
 

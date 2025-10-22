@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 import org.springframework.data.domain.Slice;
 
 @Mapper(componentModel = "spring")
-public interface PagingMapper {
+public interface BackupPagingMapper {
 
     @Mapping(target = "nextCursor", expression = "java(slice.getContent().get(slice.getContent().size()-1).getStartedAt().toString())")
     @Mapping(target = "nextIdAfter",expression = "java(slice.getContent().get(slice.getContent().size()-1).getId())")
