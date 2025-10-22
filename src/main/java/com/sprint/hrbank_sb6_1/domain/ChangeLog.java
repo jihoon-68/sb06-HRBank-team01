@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,7 +38,7 @@ public class ChangeLog {
     private String address;
 
     @Column(nullable = false)
-    private Timestamp at;
+    private LocalDateTime at;
 
     @ManyToOne
     @JoinColumn(name = "employee_id")
