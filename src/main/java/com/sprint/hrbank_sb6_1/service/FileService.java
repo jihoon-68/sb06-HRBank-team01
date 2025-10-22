@@ -66,4 +66,19 @@ public class FileService {
         .body(new InputStreamResource(stream));
 
   }
+
+  public boolean deleteFile(Long id)  {
+    File file = fileRepository.findById(id).orElse(null);
+    if(file == null) {
+      return true;
+    }
+
+    if(fileStorage.deleteFile(file.getName()) == false)
+    {
+      throw new RuntimeException("Could not delete file");
+    }
+
+    fileRepository.deleteById(id);
+    return true;
+  }
 }

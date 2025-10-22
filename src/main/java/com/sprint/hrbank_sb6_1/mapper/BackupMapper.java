@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface BackupMapper {
     
-    @Mapping(target = "fileId", expression = "Java(backup.getFile().getId())")
+    @Mapping(target = "fileId", expression = "java(backup.getFile().getId())")
     BackupDto toBackupDto(Backup backup);
     
     List<BackupDto> toBackupDtoList(List<Backup> backups);
