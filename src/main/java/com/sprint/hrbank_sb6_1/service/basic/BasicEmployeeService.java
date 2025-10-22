@@ -32,7 +32,7 @@ public class BasicEmployeeService implements EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final ChangeLogRepository changeLogRepository;
     private final ObjectMapper objectMapper;
-    private final FileStorage  fileStorage;
+    private final FileStorage fileStorage;
 
     @Transactional
     @Override
@@ -132,6 +132,13 @@ public class BasicEmployeeService implements EmployeeService {
         }
         employeeRepository.delete(employee);
         changeLog(ip, ChangeLogStatus.DELETED, "직원 삭제", employee, new Employee());
+    }
+
+    @Override
+    public EmployeeDto findById(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
+        return employeeMapper.toDto(employee);
     }
 
     private void changeLog(String ip, ChangeLogStatus changeLogStatus, String memo, Employee before, Employee after) {
