@@ -1,11 +1,13 @@
 package com.sprint.hrbank_sb6_1.service.changelog;
 
+import com.sprint.hrbank_sb6_1.domain.ChangeDiff;
 import com.sprint.hrbank_sb6_1.domain.ChangeLog;
 import com.sprint.hrbank_sb6_1.domain.ChangeLogStatus;
 import com.sprint.hrbank_sb6_1.dto.ChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseChangeLogDto;
+import com.sprint.hrbank_sb6_1.dto.DiffDto;
+import com.sprint.hrbank_sb6_1.repository.ChangeDiffRepository;
 import com.sprint.hrbank_sb6_1.repository.ChangeLogRepository;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class ChangeLogServiceImpl implements ChangeLogService {
 
     private final ChangeLogRepository changeLogRepository;
+    private final ChangeDiffRepository changeDiffRepository;
 
     @Override
     public CursorPageResponseChangeLogDto getChangeLog(
@@ -70,5 +73,17 @@ public class ChangeLogServiceImpl implements ChangeLogService {
         );
     }
 
+    @Override
+    public DiffDto getChangeLogDiffs(Long changeLogId) {
+        ChangeLog changeLog = changeLogRepository.findById(changeLogId).orElseThrow();
+        ChangeDiff changeDiff = changeDiffRepository.findByChangeLog(changeLog).orElseThrow();
+
+        return DiffDto.from(changeDiff);
+    }
+
+    @Override
+    public Long countChangeLogs(LocalDateTime fromDate, LocalDateTime toDate) {
+        return changeLogRepository.countByAtBetween(fromDate, toDate);
+    }
 
 }

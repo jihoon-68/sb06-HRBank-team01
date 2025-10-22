@@ -48,9 +48,6 @@ public class EmployeeController {
         return ResponseEntity.ok().body(employeeDto);
     }
 
-    @DeleteMapping("/{id}")
-    public
-
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
         if (profileFile.isEmpty()) {
             return Optional.empty();
