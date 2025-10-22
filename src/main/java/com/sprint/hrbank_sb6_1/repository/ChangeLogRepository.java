@@ -37,11 +37,10 @@ public interface ChangeLogRepository extends JpaRepository<ChangeLog,Long> {
 
     @Query("""
         SELECT COUNT(c) FROM ChangeLog c
-        WHERE (:atFrom IS NULL OR c.at >= :atFrom)
-          AND (:atTo IS NULL OR c.at <= :atTo)
+        WHERE c.at BETWEEN :fromDate AND :toDate
         """)
     Long countByAtBetween(
-        @Param("atFrom") LocalDateTime atFrom,
-        @Param("atTo") LocalDateTime atTo
+        @Param("fromDate") LocalDateTime fromDate,
+        @Param("toDate") LocalDateTime toDate
     );
 }
