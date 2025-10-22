@@ -10,5 +10,5 @@ import java.util.UUID;
 public interface FileStorage {
   void putFile(byte[] data, String fileName);
   InputStream getFile(String fileName);
-
+  boolean deleteFile(String fileName);
 }

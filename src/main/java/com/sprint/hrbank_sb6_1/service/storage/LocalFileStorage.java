@@ -59,4 +59,18 @@ public class LocalFileStorage implements FileStorage{
       throw new RuntimeException(e);
     }
   }
+
+  @Override
+  public boolean deleteFile(String fileName) {
+    try
+    {
+      if(Files.exists(rootPath.resolve(fileName)) == false)
+        return true;
+
+      Files.delete(rootPath.resolve(fileName));
+      return true;
+    } catch (IOException e) {
+      return false;
+    }
+  }
 }
