@@ -8,7 +8,7 @@ import java.util.List;
 public class CursorPageResponseDepartmentDto<T> {
     List<T> content;
     String nextCursor;
-    String nextIdAfter;
+    Long nextIdAfter;
     int size;
     Long totalElements;
     boolean hasNext;
