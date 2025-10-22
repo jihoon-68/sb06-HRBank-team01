@@ -7,6 +7,6 @@ import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
 
 public interface BackupService {
     BackupDto CreateBackup(String ip);
-    CursorPageResponseDepartmentDto<BackupDto> GetAllBackups(SearchBackupRequest searchBackupRequest);
+    CursorPageResponseDepartmentDto GetAllBackups(SearchBackupRequest searchBackupRequest);
     BackupDto GetBackupByStatus(BackupStatus status);
 }

@@ -7,8 +7,9 @@ import com.sprint.hrbank_sb6_1.dto.CursorPageResponseDepartmentDto;
 import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
 import com.sprint.hrbank_sb6_1.event.BackupEvent;
 import com.sprint.hrbank_sb6_1.mapper.BackupMapper;
-import com.sprint.hrbank_sb6_1.mapper.PagingMapper;
+import com.sprint.hrbank_sb6_1.mapper.BackupPagingMapper;
 import com.sprint.hrbank_sb6_1.repository.BackupRepository;
+import com.sprint.hrbank_sb6_1.repository.ChangeLogRepository;
 import com.sprint.hrbank_sb6_1.service.BackupService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,9 +25,8 @@ import java.time.LocalDateTime;
 public class BasicBackupService implements BackupService {
     private final BackupRepository backupRepository;
     private final BackupMapper backupMapper;
-    //생성되면 다시 수정 예정
-    //private final ChangeLogRepository changeLogRepository;
-    private final PagingMapper pagingMapper;
+    private final BackupPagingMapper backupPagingMapper;
+    private final ChangeLogRepository changeLogRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -37,19 +37,19 @@ public class BasicBackupService implements BackupService {
         Backup lastBackup = backupRepository.findTopByStatusOrderByStartedAtDesc(BackupStatus.COMPLETED)
                 .orElse(null);
 
-        //최근 성공한 백엡시간이 null이면 상공한 백업 이 없다는 뜻
-        LocalDateTime lastBackupAt = lastBackup != null ? lastBackup.getStartedAt() : null;
-
-        //직원 정보 이력 레포에서 lastBackupAt 시간 이후에 유저내용 변경내용 몇개 있는지 카운팅
-        //ChangeLogRepository 쿼리 요청 예정
-        int employeeChangesCount = 0;
+        //최근 성공한 백엡시간이 null이면 성공한 백업이 없다는 뜻
+        Long employeeChangesCount =null;
+        if(lastBackup != null) {
+            employeeChangesCount = changeLogRepository.countByAtBetween(lastBackup.getStartedAt(), LocalDateTime.now());
+        }
 
         Backup newBackup = new Backup();
 
         //벡업이 필요할때
-        if (lastBackupAt == null || employeeChangesCount > 10) {
+        //성공한 백업이없을떄 또는 직원 수정이력이 마직막 성공 시간 이후에 10 개 이상 일떄
+        if (employeeChangesCount == null || employeeChangesCount >= 10) {
             newBackup.setWorker(userIp);
-            newBackup.setStatus(BackupStatus.PROGRESS);
+            newBackup.setStatus(BackupStatus.IN_PROGRESS);
             backupRepository.save(newBackup);
             eventPublisher.publishEvent(new BackupEvent(newBackup.getId()));
             return backupMapper.toBackupDto(newBackup);
@@ -63,11 +63,11 @@ public class BasicBackupService implements BackupService {
     }
 
     @Override
-    public CursorPageResponseDepartmentDto<BackupDto> GetAllBackups(SearchBackupRequest searchBackupRequest) {
+    public CursorPageResponseDepartmentDto GetAllBackups(SearchBackupRequest searchBackupRequest) {
         long totalCount = backupRepository.countTasks(searchBackupRequest);
         Slice<Backup> backupSlice = backupRepository.searchTasks(searchBackupRequest);
         Slice<BackupDto> backupDtoSlice = backupSlice.map(backupMapper::toBackupDto);
-        return pagingMapper.toCursorPageResponseDepartmentDto(backupDtoSlice,totalCount);
+        return backupPagingMapper.toCursorPageResponseDepartmentDto(backupDtoSlice,totalCount);
 
     }
 
