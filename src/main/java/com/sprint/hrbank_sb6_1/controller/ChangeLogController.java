@@ -4,6 +4,7 @@ import com.sprint.hrbank_sb6_1.dto.CursorPageResponseChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.DiffDto;
 import com.sprint.hrbank_sb6_1.service.changelog.ChangeLogService;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +43,8 @@ public class ChangeLogController {
     }
 
     @GetMapping("/{id}/diffs")
-    public ResponseEntity<DiffDto> getChangeLogDiffs(@PathVariable Long id) {
-        DiffDto diffs = changeLogService.getChangeLogDiffs(id);
+    public ResponseEntity<List<DiffDto>> getChangeLogDiffs(@PathVariable Long id) {
+        List<DiffDto> diffs = changeLogService.getChangeLogDiffs(id);
         return ResponseEntity.ok(diffs);
     }
 

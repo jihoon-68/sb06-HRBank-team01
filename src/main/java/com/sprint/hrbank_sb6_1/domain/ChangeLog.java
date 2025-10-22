@@ -10,6 +10,7 @@ import jakarta.persistence.ManyToOne;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,6 +20,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 public class ChangeLog {
 
     @Id
