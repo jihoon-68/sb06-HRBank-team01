@@ -31,6 +31,8 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -68,8 +70,9 @@ public class BasicBackupIoService implements BackupIoService {
 
         try {
             Files.createDirectories(path.getParent());
-            try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+            try (BufferedWriter writer = Files.newBufferedWriter(path, UTF_8)) {
                 //.csv헤더 설정
+                writer.write("\uFEFF");
                 writer.write("ID,사번,부서,직함,입사일,상태");
                 writer.newLine();
                 try (Stream<Employee> employeeStreamstream = employeeRepository.streamAll()) {
@@ -96,6 +99,7 @@ public class BasicBackupIoService implements BackupIoService {
             //백업 상태 성공으로 변경
             backup.setStatus(BackupStatus.COMPLETED);
             backup.setEndedAt(LocalDateTime.now());
+            backup.setFile(file);
             backupRepository.save(backup);
 
             log.info("비동기 CSV 백업 파일 정보 저장 성공. {}", file);
