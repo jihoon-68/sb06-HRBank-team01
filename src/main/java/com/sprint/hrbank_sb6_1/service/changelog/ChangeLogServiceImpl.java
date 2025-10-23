@@ -84,11 +84,10 @@ public class ChangeLogServiceImpl implements ChangeLogService {
             ChangeLog changeLog = changeLogRepository.findById(changeLogId)
                 .orElseThrow(() -> new IllegalArgumentException(
                     "ChangeLog not found with id: " + changeLogId));
-            List<DiffDto> diffs = objectMapper.readValue(changeLog.getDescription(),
+
+            return objectMapper.readValue(changeLog.getDescription(),
                 new TypeReference<List<DiffDto>>() {
                 });
-
-            return diffs;
         } catch (JsonProcessingException e){
             throw new RuntimeException("Failed to parse change log diffs", e);
         }
