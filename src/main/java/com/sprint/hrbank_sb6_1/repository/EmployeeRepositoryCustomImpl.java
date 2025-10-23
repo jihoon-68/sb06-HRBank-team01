@@ -103,6 +103,14 @@ public class EmployeeRepositoryCustomImpl implements EmployeeRepositoryCustom {
                 .fetch();
     }
 
+    @Override
+    public Long getCount(EmployeeStatus status, String hireDateFrom, String hireDateTo) {
+        return queryFactory.select(employee.count())
+                .from(employee)
+                .where(statusEq(status), betweenHireDate(hireDateFrom, hireDateTo))
+                .fetchOne();
+    }
+
     private BooleanExpression nameOrEmailContains(String nameOrEmail) {
         return nameOrEmail != null ? employee.name.contains(nameOrEmail).or(QEmployee.employee.email.contains(nameOrEmail)) : null;
     }
