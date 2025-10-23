@@ -4,8 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.hrbank_sb6_1.domain.*;
 import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
+import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
+import com.sprint.hrbank_sb6_1.dto.data.EmployeeDistributionDto;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDto;
+import com.sprint.hrbank_sb6_1.dto.data.EmployeeTrendDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeCreateRequest;
+import com.sprint.hrbank_sb6_1.dto.request.EmployeeFindAllRequest;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeUpdateRequest;
 import com.sprint.hrbank_sb6_1.mapper.EmployeeMapper;
 import com.sprint.hrbank_sb6_1.repository.ChangeLogRepository;
@@ -15,6 +19,7 @@ import com.sprint.hrbank_sb6_1.repository.FileRepository;
 import com.sprint.hrbank_sb6_1.service.EmployeeService;
 import com.sprint.hrbank_sb6_1.service.storage.FileStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -139,6 +144,77 @@ public class BasicEmployeeService implements EmployeeService {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("직원을 찾을 수 없습니다."));
         return employeeMapper.toDto(employee);
+    }
+
+    @Override
+    public CursorPageResponse<EmployeeDto> findAll(EmployeeFindAllRequest employeeFindAllRequest) {
+        return employeeRepository.findAll(employeeFindAllRequest).map(employeeMapper::toDto);
+    }
+
+    @Override
+    public List<EmployeeTrendDto> searchTrend(String from, String to, String unit) {
+        long minusValue = 12;
+        to = to != null ? to : LocalDate.now().toString();
+        unit = unit != null ? unit : "month";
+        from = from != null ? from : switch (unit) {
+            case "day" -> LocalDate.now().minusDays(minusValue).toString();
+            case "week" -> LocalDate.now().minusWeeks(minusValue).toString();
+            case "quarter" -> LocalDate.now().minusMonths(minusValue * 3).toString();
+            case "year" -> LocalDate.now().minusYears(minusValue).toString();
+            default -> LocalDate.now().minusMonths(minusValue).toString();
+        };
+
+        //between(from, to) 날짜순 정렬(asc)
+        List<EmployeeTrendDto> employeeTrends = employeeRepository.getTrend(LocalDate.parse(from), LocalDate.parse(to), unit);
+        if (!employeeTrends.isEmpty()) {
+            employeeTrends.forEach(employeeTrend -> {
+                if (employeeTrends.indexOf(employeeTrend) == 0) {
+                    employeeTrend.setChange(0);
+                    employeeTrend.setChangeRate(0.0);
+                }
+                if (employeeTrends.indexOf(employeeTrend) > 0) {
+                    EmployeeTrendDto before = employeeTrends.get(employeeTrends.indexOf(employeeTrend) - 1);
+                    employeeTrend.setChange((int) (employeeTrend.getCount() - before.getCount()));
+                    employeeTrend.setChangeRate(employeeTrend.getChange() == 0 ?
+                            0.0 : Math.round((double)employeeTrend.getChange() / before.getCount() * 100 * 10) / 10);
+                }
+            });
+        }
+
+        return employeeTrends;
+    }
+
+    @Override
+    public List<EmployeeDistributionDto> searchDistribution(String groupBy, String status) {
+        List<EmployeeDistributionDto> employeeDistributions;
+        if (groupBy.equalsIgnoreCase("department")) {
+            employeeDistributions = employeeRepository.findDistributionByStatusGroupByDepartment(EmployeeStatus.valueOf(status.toUpperCase()));
+        } else if (groupBy.equalsIgnoreCase("position")) {
+            employeeDistributions = employeeRepository.findDistributionByStatusGroupByPosition(EmployeeStatus.valueOf(status.toUpperCase()));
+        } else {
+            throw new IllegalArgumentException("잘못된 그룹 값 입니다.");
+        }
+
+        long sum = 0;
+        for (EmployeeDistributionDto employeeDistribution : employeeDistributions) {
+            sum += employeeDistribution.getCount();
+        }
+
+        for (EmployeeDistributionDto employeeDistribution : employeeDistributions) {
+            double percentage = sum == 0 ? 0.0 : Math.round((double)employeeDistribution.getCount() / sum * 100.0 * 10.0) / 10.0;
+            employeeDistribution.setPercentage(percentage);
+        }
+
+        return employeeDistributions;
+    }
+
+    @Override
+    public Long getCount(EmployeeStatus status, String hireDateFrom, String hireDateTo) {
+        if (hireDateTo == null) {
+            hireDateTo = LocalDate.now().toString();
+        }
+
+        return employeeRepository.getCount(status, hireDateFrom, hireDateTo);
     }
 
     private void changeLog(String ip, ChangeLogStatus changeLogStatus, String memo, Employee before, Employee after) {

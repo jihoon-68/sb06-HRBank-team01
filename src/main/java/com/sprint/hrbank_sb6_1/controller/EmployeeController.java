@@ -1,9 +1,14 @@
 package com.sprint.hrbank_sb6_1.controller;
 
+import com.sprint.hrbank_sb6_1.domain.EmployeeStatus;
 import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
+import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
+import com.sprint.hrbank_sb6_1.dto.data.EmployeeDistributionDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDto;
+import com.sprint.hrbank_sb6_1.dto.request.EmployeeFindAllRequest;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeUpdateRequest;
+import com.sprint.hrbank_sb6_1.dto.data.EmployeeTrendDto;
 import com.sprint.hrbank_sb6_1.service.EmployeeService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -52,6 +58,42 @@ public class EmployeeController {
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable(name = "id") Long id) {
         EmployeeDto employeeDto = employeeService.findById(id);
         return ResponseEntity.ok().body(employeeDto);
+    }
+
+    @GetMapping
+    public ResponseEntity<CursorPageResponse<EmployeeDto>> getAllEmployees(EmployeeFindAllRequest employeeFindAllRequest) {
+        CursorPageResponse<EmployeeDto> cursorPageResponse = employeeService.findAll(employeeFindAllRequest);
+        return ResponseEntity.ok().body(cursorPageResponse);
+    }
+
+    @GetMapping("/stats/trend")
+    public ResponseEntity<List<EmployeeTrendDto>> searchTrend(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) String unit
+    ) {
+        List<EmployeeTrendDto> employeeTrends = employeeService.searchTrend(from, to, unit);
+        return ResponseEntity.ok().body(employeeTrends);
+    }
+
+    @GetMapping("/stats/distribution")
+    public ResponseEntity<List<EmployeeDistributionDto>> searchDistribution(
+            @RequestParam(defaultValue = "department") String groupBy,
+            @RequestParam(defaultValue = "ACTIVE") String status
+    ) {
+        List<EmployeeDistributionDto> employeeDistributions = employeeService.searchDistribution(groupBy, status);
+
+        return ResponseEntity.ok().body(employeeDistributions);
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> getCount(
+            @RequestParam(required = false) EmployeeStatus status,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate
+            ) {
+        Long count = employeeService.getCount(status, fromDate, toDate);
+        return ResponseEntity.ok().body(count);
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
