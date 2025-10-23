@@ -1,18 +1,14 @@
 package com.sprint.hrbank_sb6_1.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @AllArgsConstructor
@@ -28,13 +24,14 @@ public class Backup {
     @Column(nullable = false)
     private String worker;
 
-    @CreatedDate
+    @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime startedAt;
 
     @Column
     private LocalDateTime endedAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BackupStatus status;
 

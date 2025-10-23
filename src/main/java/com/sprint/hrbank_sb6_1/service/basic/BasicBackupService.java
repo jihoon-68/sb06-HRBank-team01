@@ -3,7 +3,7 @@ package com.sprint.hrbank_sb6_1.service.basic;
 import com.sprint.hrbank_sb6_1.domain.Backup;
 import com.sprint.hrbank_sb6_1.domain.BackupStatus;
 import com.sprint.hrbank_sb6_1.dto.BackupDto;
-import com.sprint.hrbank_sb6_1.dto.CursorPageResponseDepartmentDto;
+import com.sprint.hrbank_sb6_1.dto.CursorPageResponseBackupDto;
 import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
 import com.sprint.hrbank_sb6_1.event.BackupEvent;
 import com.sprint.hrbank_sb6_1.mapper.BackupMapper;
@@ -63,11 +63,11 @@ public class BasicBackupService implements BackupService {
     }
 
     @Override
-    public CursorPageResponseDepartmentDto GetAllBackups(SearchBackupRequest searchBackupRequest) {
+    public CursorPageResponseBackupDto GetAllBackups(SearchBackupRequest searchBackupRequest) {
         long totalCount = backupRepository.countTasks(searchBackupRequest);
         Slice<Backup> backupSlice = backupRepository.searchTasks(searchBackupRequest);
         Slice<BackupDto> backupDtoSlice = backupSlice.map(backupMapper::toBackupDto);
-        return backupPagingMapper.toCursorPageResponseDepartmentDto(backupDtoSlice,totalCount);
+        return backupPagingMapper.toCursorPageResponseBackupDto(backupDtoSlice,totalCount);
 
     }
 

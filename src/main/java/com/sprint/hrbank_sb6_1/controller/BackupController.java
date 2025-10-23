@@ -2,7 +2,7 @@ package com.sprint.hrbank_sb6_1.controller;
 
 import com.sprint.hrbank_sb6_1.domain.BackupStatus;
 import com.sprint.hrbank_sb6_1.dto.BackupDto;
-import com.sprint.hrbank_sb6_1.dto.CursorPageResponseDepartmentDto;
+import com.sprint.hrbank_sb6_1.dto.CursorPageResponseBackupDto;
 import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
 import com.sprint.hrbank_sb6_1.service.BackupService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,10 +18,10 @@ public class BackupController {
     private final BackupService backupService;
 
     @GetMapping
-    public ResponseEntity<CursorPageResponseDepartmentDto> getBackups(
+    public ResponseEntity<CursorPageResponseBackupDto> getBackups(
             @ModelAttribute SearchBackupRequest searchBackupRequest
     ) {
-        CursorPageResponseDepartmentDto pageResponseDepartmentDto = backupService.GetAllBackups(searchBackupRequest);
+        CursorPageResponseBackupDto pageResponseDepartmentDto = backupService.GetAllBackups(searchBackupRequest);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(pageResponseDepartmentDto);
