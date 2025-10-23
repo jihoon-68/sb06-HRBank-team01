@@ -1,8 +1,10 @@
 package com.sprint.hrbank_sb6_1.controller;
 
 import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
+import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDto;
+import com.sprint.hrbank_sb6_1.dto.request.EmployeeFindAllRequest;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeUpdateRequest;
 import com.sprint.hrbank_sb6_1.service.EmployeeService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,6 +54,12 @@ public class EmployeeController {
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable(name = "id") Long id) {
         EmployeeDto employeeDto = employeeService.findById(id);
         return ResponseEntity.ok().body(employeeDto);
+    }
+
+    @GetMapping
+    public ResponseEntity<CursorPageResponse<EmployeeDto>> getAllEmployees(EmployeeFindAllRequest employeeFindAllRequest) {
+        CursorPageResponse<EmployeeDto> cursorPageResponse = employeeService.findAll(employeeFindAllRequest);
+        return  ResponseEntity.ok().body(cursorPageResponse);
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
