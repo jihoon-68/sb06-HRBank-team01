@@ -37,8 +37,8 @@ public class BackupController {
 
     @GetMapping("/latest")
     public ResponseEntity<BackupDto> getLatestBackup(
-            @RequestParam BackupStatus backupStatus) {
-        BackupDto backupDto = backupService.GetBackupByStatus(backupStatus);
+            @RequestParam(defaultValue = "COMPLETED") BackupStatus status) {
+        BackupDto backupDto = backupService.GetBackupByStatus(status);
         return ResponseEntity.status(HttpStatus.OK).body(backupDto);
     }
 

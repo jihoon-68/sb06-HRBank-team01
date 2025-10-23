@@ -9,8 +9,10 @@ import com.sprint.hrbank_sb6_1.repository.BackupRepository;
 import com.sprint.hrbank_sb6_1.repository.EmployeeRepository;
 import com.sprint.hrbank_sb6_1.repository.FileRepository;
 import com.sprint.hrbank_sb6_1.service.BackupIoService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
@@ -23,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,15 +38,16 @@ public class BasicBackupIoService implements BackupIoService {
     private final BackupRepository backupRepository;
     private final FileRepository fileRepository;
     private final EmployeeRepository employeeRepository;
-
     //추후에 환경설정으로 운영체재별 위지 값 들고 오는 걸로 변경
-    private final String BACKUP_DIR = "C:/temp/backups/";
+    private final String BACKUP_DIR = System.getProperty("os.name").toLowerCase().contains("win")? "C:/myWs/uploadedFiles" : "/Users/mac/myWs/uploadedFilesimg";
     private final String TIMESTAMP  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
     @Async
     @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional
     public void saveBackupData(BackupEvent event) {
+
         //현재 작업 중인 백업 객체 조회
         Backup backup = backupRepository.findById(event.getId())
                 .orElseThrow(()-> new NoSuchElementException("Backup not found"));
@@ -91,6 +95,7 @@ public class BasicBackupIoService implements BackupIoService {
 
             //백업 상태 성공으로 변경
             backup.setStatus(BackupStatus.COMPLETED);
+            backup.setEndedAt(LocalDateTime.now());
             backupRepository.save(backup);
 
             log.info("비동기 CSV 백업 파일 정보 저장 성공. {}", file);
@@ -101,6 +106,7 @@ public class BasicBackupIoService implements BackupIoService {
             try {
                 Files.deleteIfExists(path);
                 backup.setStatus(BackupStatus.FAILED);
+                backup.setEndedAt(LocalDateTime.now());
                 backupRepository.save(backup);
                 log.info("불완전한 백업 파일을 삭제했습니다: {}", filePath);
             } catch (IOException ex) {
