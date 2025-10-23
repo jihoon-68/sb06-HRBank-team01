@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.hrbank_sb6_1.domain.*;
 import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
+import com.sprint.hrbank_sb6_1.dto.data.EmployeeDistributionDto;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDto;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeTrendDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeCreateRequest;
@@ -181,6 +182,30 @@ public class BasicEmployeeService implements EmployeeService {
         }
 
         return employeeTrends;
+    }
+
+    @Override
+    public List<EmployeeDistributionDto> searchDistribution(String groupBy, String status) {
+        List<EmployeeDistributionDto> employeeDistributions;
+        if (groupBy.equalsIgnoreCase("department")) {
+            employeeDistributions = employeeRepository.findDistributionByStatusGroupByDepartment(EmployeeStatus.valueOf(status.toUpperCase()));
+        } else if (groupBy.equalsIgnoreCase("position")) {
+            employeeDistributions = employeeRepository.findDistributionByStatusGroupByPosition(EmployeeStatus.valueOf(status.toUpperCase()));
+        } else {
+            throw new IllegalArgumentException("잘못된 그룹 값 입니다.");
+        }
+
+        long sum = 0;
+        for (EmployeeDistributionDto employeeDistribution : employeeDistributions) {
+            sum += employeeDistribution.getCount();
+        }
+
+        for (EmployeeDistributionDto employeeDistribution : employeeDistributions) {
+            double percentage = sum == 0 ? 0.0 : Math.round((double)employeeDistribution.getCount() / sum * 100.0 * 10.0) / 10.0;
+            employeeDistribution.setPercentage(percentage);
+        }
+
+        return employeeDistributions;
     }
 
     private void changeLog(String ip, ChangeLogStatus changeLogStatus, String memo, Employee before, Employee after) {
