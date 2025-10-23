@@ -2,11 +2,13 @@ package com.sprint.hrbank_sb6_1.service;
 
 import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
+import com.sprint.hrbank_sb6_1.dto.data.EmployeeTrendDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeFindAllRequest;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeUpdateRequest;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface EmployeeService {
@@ -19,4 +21,6 @@ public interface EmployeeService {
     EmployeeDto findById(Long id);
 
     CursorPageResponse<EmployeeDto> findAll(EmployeeFindAllRequest employeeFindAllRequest);
+
+    List<EmployeeTrendDto> searchTrend(String from, String to, String unit);
 }

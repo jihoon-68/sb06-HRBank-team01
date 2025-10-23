@@ -6,6 +6,7 @@ import com.sprint.hrbank_sb6_1.dto.request.EmployeeCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeFindAllRequest;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeUpdateRequest;
+import com.sprint.hrbank_sb6_1.dto.data.EmployeeTrendDto;
 import com.sprint.hrbank_sb6_1.service.EmployeeService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -59,7 +61,17 @@ public class EmployeeController {
     @GetMapping
     public ResponseEntity<CursorPageResponse<EmployeeDto>> getAllEmployees(EmployeeFindAllRequest employeeFindAllRequest) {
         CursorPageResponse<EmployeeDto> cursorPageResponse = employeeService.findAll(employeeFindAllRequest);
-        return  ResponseEntity.ok().body(cursorPageResponse);
+        return ResponseEntity.ok().body(cursorPageResponse);
+    }
+
+    @GetMapping("/stats/trend")
+    public ResponseEntity<List<EmployeeTrendDto>> searchTrend(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) String unit
+    ) {
+        List<EmployeeTrendDto> employeeTrends = employeeService.searchTrend(from, to, unit);
+        return ResponseEntity.ok().body(employeeTrends);
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

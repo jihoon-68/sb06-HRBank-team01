@@ -1,12 +1,16 @@
 package com.sprint.hrbank_sb6_1.repository;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.hrbank_sb6_1.domain.Employee;
 import com.sprint.hrbank_sb6_1.domain.EmployeeStatus;
 import com.sprint.hrbank_sb6_1.domain.QEmployee;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
+import com.sprint.hrbank_sb6_1.dto.data.EmployeeTrendDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeFindAllRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -70,6 +74,33 @@ public class EmployeeRepositoryCustomImpl implements EmployeeRepositoryCustom {
                 .totalElements(total != null ? total : 0L)
                 .size(content.size())
                 .build();
+    }
+
+    @Override
+    public List<EmployeeTrendDto> getTrend(LocalDate from, LocalDate to, String unit) {
+        StringTemplate dateFormat = switch (unit) {
+            case "day" -> Expressions.stringTemplate(
+                    "TO_CHAR({0}, 'YYYY-MM-DD')", employee.hireDate);
+            case "week" -> Expressions.stringTemplate(
+                    "TO_CHAR(DATE_TRUNC('week', {0}), 'YYYY-MM-DD')", employee.hireDate);
+            case "quarter" -> Expressions.stringTemplate(
+                    "TO_CHAR(DATE_TRUNC('quarter', {0}), 'YYYY-MM-DD')", employee.hireDate);
+            case "year" -> Expressions.stringTemplate(
+                    "TO_CHAR(DATE_TRUNC('year', {0}), 'YYYY-MM-DD')", employee.hireDate);
+            default -> Expressions.stringTemplate(
+                    "TO_CHAR(DATE_TRUNC('month', {0}), 'YYYY-MM-DD')", employee.hireDate);
+        };
+
+        return queryFactory
+                .select(Projections.constructor(EmployeeTrendDto.class,
+                        dateFormat.as("date"),
+                        employee.count().as("count")
+                ))
+                .from(employee)
+                .where(employee.hireDate.between(from, to))
+                .groupBy(dateFormat)
+                .orderBy(dateFormat.asc())
+                .fetch();
     }
 
     private BooleanExpression nameOrEmailContains(String nameOrEmail) {
