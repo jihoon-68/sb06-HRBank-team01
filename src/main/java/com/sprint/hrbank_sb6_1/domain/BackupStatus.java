@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum BackupStatus {
-    PROGRESS("진행중"),
+    IN_PROGRESS("진행중"),
     COMPLETED("진행완료"),
     FAILED("실패"),
     SKIPPED("건너뜀");

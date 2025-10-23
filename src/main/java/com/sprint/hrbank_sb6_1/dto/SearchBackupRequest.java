@@ -18,9 +18,8 @@ public class SearchBackupRequest {
     private Long idAfter;
     private String cursor;
 
-    private Integer size;
-    private String sortField;
-    private String sortDirection;
-
-
+    //기본값 살정
+    private Integer size = 30;
+    private String sortField = "startedAt";
+    private String sortDirection="DESC";
 }
