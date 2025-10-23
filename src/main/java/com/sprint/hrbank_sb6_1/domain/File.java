@@ -1,5 +1,7 @@
 package com.sprint.hrbank_sb6_1.domain;
 
+
+import com.sprint.hrbank_sb6_1.backup.domain.ScheduledBackup;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -29,11 +31,11 @@ public class File {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "backup_task_id")
-    private BackupTask backupTask;
+    @JoinColumn(name = "scheduled_backup_id")
+    private ScheduledBackup backupTask;
 
     @PrePersist
-    public void prePersist() {
+    public void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
-}
+    }
