@@ -14,10 +14,10 @@ public class BackupScheduler {
     private final BackupService backupService;
 
     @Scheduled(fixedRateString = "${backup.schedule.rate:3600000}")
-    public void runScheduledBackup() {
+    public void executeBackup() {
         log.info("🔁 자동 백업 스케줄러 시작");
         try {
-            backupService.performBackup();
+            backupService.runScheduledBackup();
             log.info("백업 완료 ✅");
         } catch (Exception e) {
             log.error("백업 실패 ❌", e);
