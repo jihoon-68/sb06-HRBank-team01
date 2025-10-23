@@ -1,5 +1,6 @@
 package com.sprint.hrbank_sb6_1.controller;
 
+import com.sprint.hrbank_sb6_1.domain.EmployeeStatus;
 import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDistributionDto;
@@ -83,6 +84,16 @@ public class EmployeeController {
         List<EmployeeDistributionDto> employeeDistributions = employeeService.searchDistribution(groupBy, status);
 
         return ResponseEntity.ok().body(employeeDistributions);
+    }
+
+    @GetMapping("/count")
+    public ResponseEntity<Long> getCount(
+            @RequestParam(required = false) EmployeeStatus status,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate
+            ) {
+        Long count = employeeService.getCount(status, fromDate, toDate);
+        return ResponseEntity.ok().body(count);
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {

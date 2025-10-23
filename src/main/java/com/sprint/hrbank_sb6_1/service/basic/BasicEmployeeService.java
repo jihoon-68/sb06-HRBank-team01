@@ -208,6 +208,15 @@ public class BasicEmployeeService implements EmployeeService {
         return employeeDistributions;
     }
 
+    @Override
+    public Long getCount(EmployeeStatus status, String hireDateFrom, String hireDateTo) {
+        if (hireDateTo == null) {
+            hireDateTo = LocalDate.now().toString();
+        }
+
+        return employeeRepository.getCount(status, hireDateFrom, hireDateTo);
+    }
+
     private void changeLog(String ip, ChangeLogStatus changeLogStatus, String memo, Employee before, Employee after) {
         try {
             List<Map<String, String>> changeLogList = new ArrayList<>();

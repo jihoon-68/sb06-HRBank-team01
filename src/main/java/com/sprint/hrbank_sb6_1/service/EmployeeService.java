@@ -1,5 +1,6 @@
 package com.sprint.hrbank_sb6_1.service;
 
+import com.sprint.hrbank_sb6_1.domain.EmployeeStatus;
 import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDistributionDto;
@@ -26,4 +27,6 @@ public interface EmployeeService {
     List<EmployeeTrendDto> searchTrend(String from, String to, String unit);
 
     List<EmployeeDistributionDto> searchDistribution(String groupBy, String status);
+
+    Long getCount(EmployeeStatus status, String hireDateFrom, String hireDateTo);
 }
