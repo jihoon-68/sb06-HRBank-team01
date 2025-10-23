@@ -2,6 +2,7 @@ package com.sprint.hrbank_sb6_1.controller;
 
 import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
+import com.sprint.hrbank_sb6_1.dto.data.EmployeeDistributionDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeFindAllRequest;
@@ -72,6 +73,16 @@ public class EmployeeController {
     ) {
         List<EmployeeTrendDto> employeeTrends = employeeService.searchTrend(from, to, unit);
         return ResponseEntity.ok().body(employeeTrends);
+    }
+
+    @GetMapping("/stats/distribution")
+    public ResponseEntity<List<EmployeeDistributionDto>> searchDistribution(
+            @RequestParam(defaultValue = "department") String groupBy,
+            @RequestParam(defaultValue = "ACTIVE") String status
+    ) {
+        List<EmployeeDistributionDto> employeeDistributions = employeeService.searchDistribution(groupBy, status);
+
+        return ResponseEntity.ok().body(employeeDistributions);
     }
 
     private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
