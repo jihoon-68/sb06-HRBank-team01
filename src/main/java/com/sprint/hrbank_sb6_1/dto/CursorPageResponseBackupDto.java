@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class CursorPageResponseDepartmentDto {
+public class CursorPageResponseBackupDto {
     List<BackupDto> content;
     String nextCursor;
     Long nextIdAfter;
