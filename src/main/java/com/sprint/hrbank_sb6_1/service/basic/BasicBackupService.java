@@ -3,6 +3,7 @@ package com.sprint.hrbank_sb6_1.service.basic;
 import com.sprint.hrbank_sb6_1.domain.Backup;
 import com.sprint.hrbank_sb6_1.domain.BackupStatus;
 import com.sprint.hrbank_sb6_1.dto.BackupDto;
+import com.sprint.hrbank_sb6_1.dto.CursorPageBackupDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseBackupDto;
 import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
 import com.sprint.hrbank_sb6_1.event.BackupEvent;
@@ -32,22 +33,23 @@ public class BasicBackupService implements BackupService {
     @Override
     @Transactional
     public BackupDto CreateBackup(String userIp) {
-
         //백업상태가 성공인 데이터 중에 최근 데이터 조회
-        Backup lastBackup = backupRepository.findTopByStatusOrderByStartedAtDesc(BackupStatus.COMPLETED)
+        Backup lastCompletedBackup = backupRepository.findTopByStatusOrderByStartedAtDesc(BackupStatus.COMPLETED)
                 .orElse(null);
 
         //최근 성공한 백엡시간이 null이면 성공한 백업이 없다는 뜻
-        Long employeeChangesCount =null;
-        if(lastBackup != null) {
-            employeeChangesCount = changeLogRepository.countByAtBetween(lastBackup.getStartedAt(), LocalDateTime.now());
+        long employeeChangesCount =0L;
+        if(lastCompletedBackup != null) {
+            employeeChangesCount = changeLogRepository.countByAtBetween(lastCompletedBackup.getStartedAt(), LocalDateTime.now());
+        }else {
+            employeeChangesCount = changeLogRepository.count();
         }
 
         Backup newBackup = new Backup();
 
         //벡업이 필요할때
         //성공한 백업이없을떄 또는 직원 수정이력이 마직막 성공 시간 이후에 10 개 이상 일떄
-        if (employeeChangesCount == null || employeeChangesCount >= 10) {
+        if (employeeChangesCount >10) {
             newBackup.setWorker(userIp);
             newBackup.setStatus(BackupStatus.IN_PROGRESS);
             backupRepository.save(newBackup);
@@ -67,7 +69,17 @@ public class BasicBackupService implements BackupService {
         long totalCount = backupRepository.countTasks(searchBackupRequest);
         Slice<Backup> backupSlice = backupRepository.searchTasks(searchBackupRequest);
         Slice<BackupDto> backupDtoSlice = backupSlice.map(backupMapper::toBackupDto);
-        return backupPagingMapper.toCursorPageResponseBackupDto(backupDtoSlice,totalCount);
+
+        String backupStartTime =null;
+        Long backId =null;
+        if(!backupDtoSlice.getContent().isEmpty()) {
+            backupStartTime =  backupDtoSlice.getContent().get(0).getStartedAt().toString();
+            backId = backupDtoSlice.getContent().get(0).getId();
+        }
+
+        CursorPageBackupDto cursorPageBackupDto = new CursorPageBackupDto(backupStartTime, backId,totalCount);
+
+        return backupPagingMapper.toCursorPageResponseBackupDto(backupDtoSlice,cursorPageBackupDto);
 
     }
 
