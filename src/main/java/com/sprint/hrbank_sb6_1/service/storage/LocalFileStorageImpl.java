@@ -13,11 +13,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LocalFileStorage implements FileStorage{
+public class LocalFileStorageImpl implements FileStorage{
 
   private final Path rootPath;
 
-  public LocalFileStorage(@Value("${spring.hrbank.storage.local.root-path}") String path)
+  public LocalFileStorageImpl(@Value("${spring.hrbank.storage.local.root-path}") String path)
   {
     rootPath = Paths.get(System.getProperty("user.dir"),path);
     init();

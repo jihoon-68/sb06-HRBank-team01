@@ -4,6 +4,7 @@ import com.sprint.hrbank_sb6_1.domain.File;
 import com.sprint.hrbank_sb6_1.dto.BinaryContentCreateRequest;
 import com.sprint.hrbank_sb6_1.repository.FileRepository;
 import com.sprint.hrbank_sb6_1.service.storage.FileStorage;
+import jakarta.annotation.Resource;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +12,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -52,7 +52,7 @@ public class FileService {
   }
 
 
-  public ResponseEntity<Resource> getFile(Long id) throws NotFoundException {
+  public ResponseEntity<InputStreamResource> getFile(Long id) throws NotFoundException {
 
     File file = fileRepository.findById(id).orElse(null);
     if(file == null) {
