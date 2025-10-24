@@ -32,7 +32,7 @@ public class BasicBackupService implements BackupService {
 
     @Override
     @Transactional
-    public BackupDto CreateBackup(String userIp) {
+    public BackupDto CreateBackup( String userIp) {
         //백업상태가 성공인 데이터 중에 최근 데이터 조회
         Backup lastCompletedBackup = backupRepository.findTopByStatusOrderByStartedAtDesc(BackupStatus.COMPLETED)
                 .orElse(null);
@@ -50,16 +50,14 @@ public class BasicBackupService implements BackupService {
         //벡업이 필요할때
         //성공한 백업이없을떄 또는 직원 수정이력이 마직막 성공 시간 이후에 10 개 이상 일떄
         if (employeeChangesCount >10) {
-            newBackup.setWorker(userIp);
-            newBackup.setStatus(BackupStatus.IN_PROGRESS);
+            newBackup.markInProgress(userIp);
             backupRepository.save(newBackup);
             eventPublisher.publishEvent(new BackupEvent(newBackup.getId()));
             return backupMapper.toBackupDto(newBackup);
         }
 
         //백업이 필요없을때
-        newBackup.setWorker(userIp);
-        newBackup.setStatus(BackupStatus.SKIPPED);
+        newBackup.markSkipped(userIp);
         backupRepository.save(newBackup);
         return backupMapper.toBackupDto(newBackup);
     }
@@ -72,7 +70,7 @@ public class BasicBackupService implements BackupService {
 
         String backupStartTime =null;
         Long backId =null;
-        if(!backupDtoSlice.getContent().isEmpty()) {
+        if(!backupDtoSlice.getContent().isEmpty()&&backupSlice.hasNext()) {
             backupStartTime =  backupDtoSlice.getContent().get(0).getStartedAt().toString();
             backId = backupDtoSlice.getContent().get(0).getId();
         }

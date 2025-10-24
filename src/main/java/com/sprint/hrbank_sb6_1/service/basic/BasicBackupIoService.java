@@ -9,6 +9,7 @@ import com.sprint.hrbank_sb6_1.repository.BackupRepository;
 import com.sprint.hrbank_sb6_1.repository.EmployeeRepository;
 import com.sprint.hrbank_sb6_1.repository.FileRepository;
 import com.sprint.hrbank_sb6_1.service.BackupIoService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -22,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
@@ -31,6 +31,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
 @Service
+@Transactional
 public class BasicBackupIoService implements BackupIoService {
     private final BackupRepository backupRepository;
     private final FileRepository fileRepository;
@@ -96,12 +97,9 @@ public class BasicBackupIoService implements BackupIoService {
 
             //파일 사이즈 추가
             file.setSize((int) Files.size(path));
-            System.out.println();
 
             //백업 상태 성공으로 변경
-            backup.setStatus(BackupStatus.COMPLETED);
-            backup.setEndedAt(LocalDateTime.now());
-            backup.setFile(file);
+            backup.markCompleted(file);
 
             //파일정보, 백업정보 저장
             fileRepository.save(file);
@@ -114,22 +112,20 @@ public class BasicBackupIoService implements BackupIoService {
                 //실패시 미완성 파일 삭제
                 Files.deleteIfExists(path);
 
-                //백업 상태 실패로 변경
-                backup.setStatus(BackupStatus.FAILED);
-                backup.setEndedAt(LocalDateTime.now());
-/*
                 //백업 실패 로그 파일 작성
                 String logFileName = TIMESTAMP+".log";
                 Path logPath = Paths.get(String.valueOf(rootPath), logFileName);
                 Files.writeString(logPath, e.toString(), UTF_8);
                 File logFile = new File(null,logFileName,"text/plain",(int)Files.size(logPath));
 
+                //백업 상태 실패로 변경
+                backup.markFailed(logFile);
+
                 //백업 정보, 에러 로그 파일 정보 저장
                 fileRepository.save(logFile);
                 backupRepository.save(backup);
                 log.info("불완전한 백업 파일을 삭제했습니다: {}", file);
 
- */
             } catch (IOException ex) {
                 log.error("불완전한 백업 파일 삭제에 실패했습니다: {}", file, ex);
             }
