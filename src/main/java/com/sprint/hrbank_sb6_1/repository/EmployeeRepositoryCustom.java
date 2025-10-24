@@ -14,5 +14,5 @@ public interface EmployeeRepositoryCustom {
 
     List<EmployeeTrendDto> getTrend(LocalDate from, LocalDate to, String unit);
 
-    Long getCount(EmployeeStatus status, String hireDateFrom, String hireDateTo);
+    Long getCount(EmployeeStatus status, LocalDate hireDateFrom, LocalDate hireDateTo);
 }

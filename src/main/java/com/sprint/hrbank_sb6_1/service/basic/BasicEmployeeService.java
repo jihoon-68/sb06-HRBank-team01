@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Service
@@ -85,16 +86,6 @@ public class BasicEmployeeService implements EmployeeService {
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(() ->
                 new NoSuchElementException("직원을 찾을 수 없습니다."));
 
-        Employee before = Employee.builder()
-                .name(employee.getName())
-                .email(employee.getEmail())
-                .position(employee.getPosition())
-                .hireDate(employee.getHireDate())
-                .status(employee.getStatus())
-                .department(employee.getDepartment())
-                .profileImage(employee.getProfileImage())
-                .build();
-
         if (!employee.getEmail().equals(employeeUpdateRequest.getEmail())
                 && employeeRepository.existsByEmail(employeeUpdateRequest.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일 입니다.");
@@ -109,12 +100,14 @@ public class BasicEmployeeService implements EmployeeService {
             profile.setName(binaryContentCreateRequest.fileName());
             profile.setSize(binaryContentCreateRequest.bytes().length);
             if (employee.getProfileImage() != null) {
-                fileRepository.deleteById(employee.getProfileImage().getId());
+                fileRepository.delete(employee.getProfileImage());
             }
             File createdFile = fileRepository.save(profile);
             fileStorage.putFile(binaryContentCreateRequest.bytes(), createdFile.getName());
             return createdFile;
-        }).orElse(employee.getProfileImage());
+        }).orElse(employee.getProfileImage()); //null로 값을 줄 경우 프론트에서 계속 기존 이미지를 보내야하고 같은 이미지가 계속해서 새로 저장됌
+
+        Employee before = employee.clone(); //준영속
 
         employee.update(department, employeeUpdateRequest.getName(), employeeUpdateRequest.getPosition(),
                 employeeUpdateRequest.getEmail(), EmployeeStatus.fromDescription(employeeUpdateRequest.getStatus()), nullableProfile,
@@ -153,56 +146,57 @@ public class BasicEmployeeService implements EmployeeService {
 
     @Override
     public List<EmployeeTrendDto> searchTrend(String from, String to, String unit) {
-        long minusValue = 12;
-        to = to != null ? to : LocalDate.now().toString();
-        unit = unit != null ? unit : "month";
-        from = from != null ? from : switch (unit) {
-            case "day" -> LocalDate.now().minusDays(minusValue).toString();
-            case "week" -> LocalDate.now().minusWeeks(minusValue).toString();
-            case "quarter" -> LocalDate.now().minusMonths(minusValue * 3).toString();
-            case "year" -> LocalDate.now().minusYears(minusValue).toString();
-            default -> LocalDate.now().minusMonths(minusValue).toString();
-        };
+        try {
+            long minusValue = 12;
+            to = to != null ? to : LocalDate.now().toString();
+            unit = unit != null ? unit : "month";
+            from = from != null ? from : switch (unit) {
+                case "day" -> LocalDate.now().minusDays(minusValue).toString();
+                case "week" -> LocalDate.now().minusWeeks(minusValue).toString();
+                case "quarter" -> LocalDate.now().minusMonths(minusValue * 3).toString();
+                case "year" -> LocalDate.now().minusYears(minusValue).toString();
+                default -> LocalDate.now().minusMonths(minusValue).toString();
+            };
 
-        //between(from, to) 날짜순 정렬(asc)
-        List<EmployeeTrendDto> employeeTrends = employeeRepository.getTrend(LocalDate.parse(from), LocalDate.parse(to), unit);
-        if (!employeeTrends.isEmpty()) {
-            employeeTrends.forEach(employeeTrend -> {
-                if (employeeTrends.indexOf(employeeTrend) == 0) {
-                    employeeTrend.setChange(0);
-                    employeeTrend.setChangeRate(0.0);
-                }
-                if (employeeTrends.indexOf(employeeTrend) > 0) {
-                    EmployeeTrendDto before = employeeTrends.get(employeeTrends.indexOf(employeeTrend) - 1);
-                    employeeTrend.setChange((int) (employeeTrend.getCount() - before.getCount()));
-                    employeeTrend.setChangeRate(employeeTrend.getChange() == 0 ?
-                            0.0 : Math.round((double)employeeTrend.getChange() / before.getCount() * 100 * 10) / 10);
-                }
-            });
+            //between(from, to) 날짜순 정렬(asc)
+            List<EmployeeTrendDto> employeeTrends = employeeRepository.getTrend(LocalDate.parse(from), LocalDate.parse(to), unit);
+            if (!employeeTrends.isEmpty()) {
+                employeeTrends.forEach(employeeTrend -> {
+                    if (employeeTrends.indexOf(employeeTrend) == 0) {
+                        employeeTrend.setChange(0);
+                        employeeTrend.setChangeRate(0.0);
+                    }
+                    if (employeeTrends.indexOf(employeeTrend) > 0) {
+                        EmployeeTrendDto before = employeeTrends.get(employeeTrends.indexOf(employeeTrend) - 1);
+                        employeeTrend.setChange((int) (employeeTrend.getCount() - before.getCount()));
+                        employeeTrend.setChangeRate(employeeTrend.getChange() == 0 ?
+                                0.0 : Math.round((double) employeeTrend.getChange() / before.getCount() * 100 * 10) / 10);
+                    }
+                });
+            }
+            return employeeTrends;
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("잘못된 날짜 형식 입니다.");
         }
-
-        return employeeTrends;
     }
 
     @Override
     public List<EmployeeDistributionDto> searchDistribution(String groupBy, String status) {
         List<EmployeeDistributionDto> employeeDistributions;
-        if (groupBy.equalsIgnoreCase("department")) {
-            employeeDistributions = employeeRepository.findDistributionByStatusGroupByDepartment(EmployeeStatus.valueOf(status.toUpperCase()));
-        } else if (groupBy.equalsIgnoreCase("position")) {
+        if (groupBy.equalsIgnoreCase("position")) {
             employeeDistributions = employeeRepository.findDistributionByStatusGroupByPosition(EmployeeStatus.valueOf(status.toUpperCase()));
         } else {
-            throw new IllegalArgumentException("잘못된 그룹 값 입니다.");
+            employeeDistributions = employeeRepository.findDistributionByStatusGroupByDepartment(EmployeeStatus.valueOf(status.toUpperCase()));
         }
 
-        long sum = 0;
-        for (EmployeeDistributionDto employeeDistribution : employeeDistributions) {
-            sum += employeeDistribution.getCount();
-        }
+        long sum = employeeDistributions.stream().mapToLong(EmployeeDistributionDto::getCount).sum();
 
-        for (EmployeeDistributionDto employeeDistribution : employeeDistributions) {
-            double percentage = sum == 0 ? 0.0 : Math.round((double)employeeDistribution.getCount() / sum * 100.0 * 10.0) / 10.0;
-            employeeDistribution.setPercentage(percentage);
+        //sum이 0이면 리스트도 없지만 체크하는게 좋을 거라 생각
+        if (sum > 0) {
+            for (EmployeeDistributionDto employeeDistribution : employeeDistributions) {
+                double percentage = Math.round((double) employeeDistribution.getCount() / sum * 100.0 * 10.0) / 10.0;
+                employeeDistribution.setPercentage(percentage);
+            }
         }
 
         return employeeDistributions;
@@ -210,11 +204,14 @@ public class BasicEmployeeService implements EmployeeService {
 
     @Override
     public Long getCount(EmployeeStatus status, String hireDateFrom, String hireDateTo) {
-        if (hireDateTo == null) {
-            hireDateTo = LocalDate.now().toString();
-        }
+        try {
+            LocalDate to = hireDateTo != null ? LocalDate.parse(hireDateTo) : LocalDate.now();
+            LocalDate from = hireDateFrom != null ? LocalDate.parse(hireDateFrom) : null;
 
-        return employeeRepository.getCount(status, hireDateFrom, hireDateTo);
+            return employeeRepository.getCount(status, from, to);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("잘못된 날짜 형식 입니다.");
+        }
     }
 
     private void changeLog(String ip, ChangeLogStatus changeLogStatus, String memo, Employee before, Employee after) {

@@ -57,4 +57,18 @@ public class Employee {
         this.profileImage = profileImage;
         this.hireDate = hireDate;
     }
+
+    public Employee clone() {
+        return Employee.builder()
+                .id(id)
+                .employeeNumber(employeeNumber)
+                .profileImage(this.getProfileImage())
+                .status(this.getStatus())
+                .position(this.getPosition())
+                .email(this.getEmail())
+                .department(this.getDepartment())
+                .name(this.getName())
+                .hireDate(this.getHireDate())
+                .build();
+    }
 }
