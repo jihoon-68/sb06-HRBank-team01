@@ -22,27 +22,27 @@ import lombok.Setter;
 @Builder
 public class ChangeLog {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false)
-    private ChangeLogStatus status;
+  @Column(nullable = false)
+  private ChangeLogStatus status;
 
-    @Column(nullable = false)
-    private String description;
+  @Column(nullable = false)
+  private String description;
 
-    @Column
-    private String memo;
+  @Column
+  private String memo;
 
-    @Column(nullable = false)
-    private String address;
+  @Column(nullable = false)
+  private String address;
 
-    @Column(nullable = false)
-    private LocalDateTime at;
+  @Column(nullable = false)
+  private LocalDateTime at;
 
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
+  @ManyToOne
+  @JoinColumn(name = "employee_id")
+  private Employee employee;
 
 }

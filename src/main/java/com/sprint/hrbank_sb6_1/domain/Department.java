@@ -5,15 +5,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.sql.Timestamp;
-import lombok.AllArgsConstructor;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 public class Department {
@@ -28,6 +26,12 @@ public class Department {
     @Column
     private String description;
 
-    @Column(nullable = false)
-    private Timestamp establishedDate;
+    @Column(name = "established_date", nullable = false)
+    private LocalDate establishedDate;
+
+    public Department(String name, String description, LocalDate establishedDate) {
+      this.name = name;
+      this.description = description;
+      this.establishedDate = establishedDate;
+    }
 }
