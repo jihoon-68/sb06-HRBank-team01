@@ -1,11 +1,18 @@
 package com.sprint.hrbank_sb6_1.domain;
 
-import jakarta.persistence.*;
-
-import java.sql.Timestamp;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
-
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -15,28 +22,27 @@ import lombok.*;
 @Builder
 public class ChangeLog {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ChangeLogStatus status;
+  @Column(nullable = false)
+  private ChangeLogStatus status;
 
-    @Column(nullable = false)
-    private String description;
+  @Column(nullable = false)
+  private String description;
 
-    @Column
-    private String memo;
+  @Column
+  private String memo;
 
-    @Column(nullable = false)
-    private String address;
+  @Column(nullable = false)
+  private String address;
 
-    @Column(nullable = false)
-    private LocalDateTime at;
+  @Column(nullable = false)
+  private LocalDateTime at;
 
-    @ManyToOne
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
+  @ManyToOne
+  @JoinColumn(name = "employee_id")
+  private Employee employee;
 
 }
