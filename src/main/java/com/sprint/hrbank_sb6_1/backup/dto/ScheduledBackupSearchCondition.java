@@ -10,11 +10,15 @@ import java.time.LocalDateTime;
 @Setter
 public class ScheduledBackupSearchCondition {
 
-    private String worker;               // LIKE 검색
-    private LocalDateTime startedAtFrom; // 시작일 범위 (from)
-    private LocalDateTime startedAtTo;   // 시작일 범위 (to)
-    private ScheduledBackupStatus status; // EXACT 검색
-    private Long lastId;                 // 커서 기반 페이징
-    private Integer size;                // 페이지 사이즈
-    private String orderBy;              // "startedAt" | "endedAt"
+    private String worker;                      // LIKE 검색
+    private LocalDateTime startedAtFrom;        // 시작일 ~
+    private LocalDateTime startedAtTo;          // ~ 시작일
+    private ScheduledBackupStatus status;       // EXACT (Enum)
+
+    private Long lastId;                        // 커서(이전 페이지 마지막 ID)
+    private Integer size;                       // 페이지 크기 (기본 10)
+
+    // 정렬: swagger 컨벤션에 맞춰 필드명 확정
+    private String sortField;                   // startedAt | endedAt | status (기본 startedAt)
+    private String sortDirection;               // ASC | DESC (기본 DESC)
 }

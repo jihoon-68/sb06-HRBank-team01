@@ -30,37 +30,37 @@ public class ScheduledBackup {
     // 백업 종료
     private LocalDateTime endedAt;
 
-    // 백업 상태
+    // 백업 상태 (Enum)
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private ScheduledBackupStatus status;
 
-    // 백업 파일, 실패 로그 파일
+    // 백업 파일(성공 또는 실패 로그)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "file_id")
     private File backupFile;
 
-    //상태 업데이트
-
+    // 상태 업데이트
     public void markInProgress(String worker) {
         this.worker = worker;
-        this.status = "IN_PROGRESS";
+        this.status = ScheduledBackupStatus.IN_PROGRESS;
         this.startedAt = LocalDateTime.now();
     }
 
     public void markCompleted(File csvFile) {
-        this.status = "COMPLETE";
+        this.status = ScheduledBackupStatus.COMPLETED;
         this.endedAt = LocalDateTime.now();
         this.backupFile = csvFile;
     }
 
     public void markFailed(File logFile) {
-        this.status = "FAILED";
+        this.status = ScheduledBackupStatus.FAILED;
         this.endedAt = LocalDateTime.now();
         this.backupFile = logFile;
     }
 
     public void markSkipped() {
-        this.status = "SKIPPED";
+        this.status = ScheduledBackupStatus.SKIPPED;
         this.endedAt = LocalDateTime.now();
     }
 }

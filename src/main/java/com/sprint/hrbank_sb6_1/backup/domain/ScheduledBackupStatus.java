@@ -1,8 +1,8 @@
 package com.sprint.hrbank_sb6_1.backup.domain;
 
 public enum ScheduledBackupStatus {
-    진행중,
-    완료,
-    실패,
-    건너뜀
+    IN_PROGRESS,   // 진행중
+    COMPLETED,     // 완료
+    FAILED,        // 실패
+    SKIPPED        // 건너뜀
 }
