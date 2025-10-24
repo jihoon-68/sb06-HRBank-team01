@@ -31,10 +31,13 @@ public class EmployeeRepositoryCustomImpl implements EmployeeRepositoryCustom {
         OrderSpecifier<Long> secondarySort = request.getSortDirection().equalsIgnoreCase("desc")
                 ? employee.id.desc() : employee.id.asc();
 
+        LocalDate from = request.getHireDateFrom() != null ? LocalDate.parse(request.getHireDateFrom()) : null;
+        LocalDate to = request.getHireDateTo() != null ? LocalDate.parse(request.getHireDateTo()) : LocalDate.now();
+
         List<Employee> content = queryFactory.selectFrom(employee)
                 .where(nameOrEmailContains(request.getNameOrEmail()), employeeNumberContains(request.getEmployeeNumber()),
                         departmentNameContains(request.getDepartmentName()), positionContains(request.getPosition()),
-                        betweenHireDate(request.getHireDateFrom(), request.getHireDateTo()), statusEq(request.getStatus()),
+                        betweenHireDate(from, to), statusEq(request.getStatus()),
                         cursorIdAfter(request.getCursor(), request.getIdAfter(), request.getSortField(), request.getSortDirection()))
                 .orderBy(primarySort, secondarySort)
                 .limit(request.getSize() + 1)
@@ -63,7 +66,7 @@ public class EmployeeRepositoryCustomImpl implements EmployeeRepositoryCustom {
                 .from(employee)
                 .where(nameOrEmailContains(request.getNameOrEmail()), employeeNumberContains(request.getEmployeeNumber()),
                         departmentNameContains(request.getDepartmentName()), positionContains(request.getPosition()),
-                        betweenHireDate(request.getHireDateFrom(), request.getHireDateTo()), statusEq(request.getStatus()))
+                        betweenHireDate(from, to), statusEq(request.getStatus()))
                 .fetchOne();
 
         return CursorPageResponse.<Employee>builder()
@@ -104,7 +107,7 @@ public class EmployeeRepositoryCustomImpl implements EmployeeRepositoryCustom {
     }
 
     @Override
-    public Long getCount(EmployeeStatus status, String hireDateFrom, String hireDateTo) {
+    public Long getCount(EmployeeStatus status, LocalDate hireDateFrom, LocalDate hireDateTo) {
         return queryFactory.select(employee.count())
                 .from(employee)
                 .where(statusEq(status), betweenHireDate(hireDateFrom, hireDateTo))
@@ -127,21 +130,20 @@ public class EmployeeRepositoryCustomImpl implements EmployeeRepositoryCustom {
         return position != null ? employee.position.contains(position) : null;
     }
 
-    private BooleanExpression betweenHireDate(String hireDateFrom, String hireDateTo) {
+    private BooleanExpression betweenHireDate(LocalDate hireDateFrom, LocalDate hireDateTo) {
         if (hireDateFrom == null && hireDateTo == null) {
             return null;
         }
 
-        LocalDate from = hireDateFrom != null ? LocalDate.parse(hireDateFrom) : null;
-        LocalDate to = hireDateTo != null ? LocalDate.parse(hireDateTo) : null;
-
         if (hireDateFrom != null && hireDateTo != null) {
-            return employee.hireDate.between(from, to);
-        } else if (hireDateFrom != null) {
-            return employee.hireDate.goe(from);
-        } else {
-            return employee.hireDate.loe(to);
+            return employee.hireDate.between(hireDateFrom, hireDateTo);
         }
+
+        if (hireDateFrom != null) {
+            return employee.hireDate.goe(hireDateFrom);
+        }
+
+        return employee.hireDate.loe(hireDateTo);
     }
 
     private BooleanExpression statusEq(EmployeeStatus status) {
