@@ -52,7 +52,7 @@ public class ChangeLogController {
 
     @GetMapping("/count")
     public ResponseEntity<Long> countChangeLogs(
-        @RequestParam LocalDateTime fromDate, @RequestParam LocalDateTime toDate) {
+        @RequestParam(required = false) LocalDateTime fromDate, @RequestParam(required = false) LocalDateTime toDate) {
         return ResponseEntity.ok(
             changeLogService.countChangeLogs(fromDate, toDate)
         );

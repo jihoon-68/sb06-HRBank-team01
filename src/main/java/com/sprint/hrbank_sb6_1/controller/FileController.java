@@ -31,14 +31,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
-@ResponseBody
 @RequestMapping("/api/files")
 public class FileController {
 
   private final FileService fileService;
 
   @GetMapping("/{id}/download")
-  public ResponseEntity<?> download(@PathVariable("id") Long id) throws NotFoundException {
+  public ResponseEntity download(@PathVariable("id") Long id) throws NotFoundException {
     return fileService.getFile(id);
   }
 

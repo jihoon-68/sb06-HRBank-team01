@@ -1,8 +1,8 @@
 package com.sprint.hrbank_sb6_1.domain;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +25,7 @@ public class ChangeLog {
     @Column(nullable = false)
     private ChangeLogStatus status;
 
+    @Lob
     @Column(nullable = false)
     private String description;
 
