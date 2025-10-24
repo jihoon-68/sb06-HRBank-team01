@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,7 @@ public class ChangeLog {
   @Column(nullable = false)
   private ChangeLogStatus status;
 
+  @Lob
   @Column(nullable = false)
   private String description;
 

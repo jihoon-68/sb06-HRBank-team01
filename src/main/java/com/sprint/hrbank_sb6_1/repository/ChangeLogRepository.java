@@ -11,36 +11,5 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ChangeLogRepository extends JpaRepository<ChangeLog,Long> {
-
-
-    @Query("""
-        SELECT c FROM ChangeLog c
-        WHERE (:employeeNumber IS NULL OR c.employee.employeeNumber LIKE %:employeeNumber%)
-          AND (:type IS NULL OR c.status = :type)
-          AND (:memo IS NULL OR c.memo LIKE %:memo%)
-          AND (:ipAddress IS NULL OR c.address LIKE %:ipAddress%)
-          AND (:atFrom IS NULL OR c.at >= :atFrom)
-          AND (:atTo IS NULL OR c.at <= :atTo)
-          AND (:idAfter IS NULL OR c.id > :idAfter)
-        """)
-    List<ChangeLog> searchChangeLogs(
-        @Param("employeeNumber") String employeeNumber,
-        @Param("type") ChangeLogStatus type,
-        @Param("memo") String memo,
-        @Param("ipAddress") String ipAddress,
-        @Param("atFrom") LocalDateTime atFrom,
-        @Param("atTo") LocalDateTime atTo,
-        @Param("idAfter") Long idAfter,
-        Pageable pageable
-    );
-
-    @Query("""
-        SELECT COUNT(c) FROM ChangeLog c
-        WHERE c.at BETWEEN :fromDate AND :toDate
-        """)
-    Long countByAtBetween(
-        @Param("fromDate") LocalDateTime fromDate,
-        @Param("toDate") LocalDateTime toDate
-    );
+public interface ChangeLogRepository extends JpaRepository<ChangeLog,Long>, ChangeLogRepositoryCustom{
 }

@@ -10,6 +10,7 @@ import com.sprint.hrbank_sb6_1.dto.ChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.DiffDto;
 import com.sprint.hrbank_sb6_1.repository.ChangeLogRepository;
+import jakarta.transaction.Transactional;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ChangeLogServiceImpl implements ChangeLogService {
 
     private final ChangeLogRepository changeLogRepository;
