@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "scheduled_backup")
@@ -14,34 +12,55 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ScheduledBackup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 백업 수행 사용자
+    // 백업 사용자
     @Column(nullable = false)
     private String worker;
 
-    // 백업 시작 시간
+    // 백업 시작
     @Column(nullable = false)
     private LocalDateTime startedAt;
 
-    // 백업 종료 시간
+    // 백업 종료
     private LocalDateTime endedAt;
 
     // 백업 상태
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ScheduledBackupStatus status;
+    private String status;
 
-    // 백업 결과로 생성된 파일 목록
-    @OneToMany(mappedBy = "backupTask", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<File> files = new ArrayList<>();
+    // 백업 파일, 실패 로그 파일
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id")
+    private File backupFile;
 
-    public void addFile(File file) {
-        this.files.add(file);
-        file.setBackupTask(this);
+    //상태 업데이트
+
+    public void markInProgress(String worker) {
+        this.worker = worker;
+        this.status = "IN_PROGRESS";
+        this.startedAt = LocalDateTime.now();
+    }
+
+    public void markCompleted(File csvFile) {
+        this.status = "COMPLETE";
+        this.endedAt = LocalDateTime.now();
+        this.backupFile = csvFile;
+    }
+
+    public void markFailed(File logFile) {
+        this.status = "FAILED";
+        this.endedAt = LocalDateTime.now();
+        this.backupFile = logFile;
+    }
+
+    public void markSkipped() {
+        this.status = "SKIPPED";
+        this.endedAt = LocalDateTime.now();
     }
 }
