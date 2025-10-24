@@ -1,7 +1,8 @@
-package com.sprint.hrbank_sb6_1.backup.service;
+package com.sprint.hrbank_sb6_1.backup.scheduled.service;
 
-import com.sprint.hrbank_sb6_1.backup.domain.ScheduledBackup;
-import com.sprint.hrbank_sb6_1.backup.repository.ScheduledBackupRepository;
+import com.sprint.hrbank_sb6_1.backup.scheduled.domain.ScheduledBackup;
+import com.sprint.hrbank_sb6_1.backup.scheduled.domain.ScheduledBackupStatus;
+import com.sprint.hrbank_sb6_1.backup.scheduled.repository.ScheduledBackupRepository;
 import com.sprint.hrbank_sb6_1.domain.Employee;
 import com.sprint.hrbank_sb6_1.domain.File;
 import com.sprint.hrbank_sb6_1.repository.EmployeeRepository;
@@ -32,7 +33,7 @@ public class ScheduledBackupService {
         ScheduledBackup backup = new ScheduledBackup();
         backup.setWorker("system");
         backup.setStartedAt(LocalDateTime.now());
-        backup.setStatus("IN_PROGRESS");
+        backup.setStatus(ScheduledBackupStatus.IN_PROGRESS);
         scheduledBackupRepository.save(backup);
 
         try {
@@ -70,7 +71,7 @@ public class ScheduledBackupService {
 
             // 5) 백업 엔티티에 파일 연결 + 상태 갱신
             backup.setBackupFile(backupFile);
-            backup.setStatus("COMPLETE");
+            backup.setStatus(ScheduledBackupStatus.COMPLETE);
             backup.setEndedAt(LocalDateTime.now());
             scheduledBackupRepository.save(backup);
 
@@ -106,7 +107,7 @@ public class ScheduledBackupService {
             }
 
             // 9) 상태 갱신
-            backup.setStatus("FAILED");
+            backup.setStatus(ScheduledBackupStatus.FAILED);
             backup.setEndedAt(LocalDateTime.now());
             scheduledBackupRepository.save(backup);
         }

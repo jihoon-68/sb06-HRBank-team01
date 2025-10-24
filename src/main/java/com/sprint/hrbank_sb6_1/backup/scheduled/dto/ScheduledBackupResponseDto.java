@@ -1,6 +1,6 @@
-package com.sprint.hrbank_sb6_1.backup.dto;
+package com.sprint.hrbank_sb6_1.backup.scheduled.dto;
 
-import com.sprint.hrbank_sb6_1.backup.domain.ScheduledBackupStatus;
+import com.sprint.hrbank_sb6_1.backup.scheduled.domain.ScheduledBackupStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -16,5 +16,8 @@ public class ScheduledBackupResponseDto {
     private LocalDateTime startedAt;
     private LocalDateTime endedAt;
     private ScheduledBackupStatus status;
-    private Integer fileCount;  // backupFile != null ? 1 : 0
+    private Integer fileCount;
+
+
 }
+

@@ -1,4 +1,4 @@
-package com.sprint.hrbank_sb6_1.backup.repository;
+package com.sprint.hrbank_sb6_1.backup.scheduled.repository;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -6,9 +6,9 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.sprint.hrbank_sb6_1.backup.domain.QScheduledBackup;
-import com.sprint.hrbank_sb6_1.backup.dto.ScheduledBackupResponseDto;
-import com.sprint.hrbank_sb6_1.backup.dto.ScheduledBackupSearchCondition;
+import com.sprint.hrbank_sb6_1.backup.scheduled.domain.QScheduledBackup;
+import com.sprint.hrbank_sb6_1.backup.scheduled.dto.ScheduledBackupResponseDto;
+import com.sprint.hrbank_sb6_1.backup.scheduled.dto.ScheduledBackupSearchCondition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
@@ -16,6 +16,16 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
+public class ScheduledBackupRepositoryImpl implements ScheduledBackupRepositoryCustom {
+
+    @Override
+    public List<ScheduledBackupResponseDto> search(ScheduledBackupSearchCondition condition) {
+        // TODO: 커서/조건 기반 조회 구현 (PR 이후 2차 작업 예정)
+        return List.of(); // 임시 빈 리스트
+    }
+}
+/*
 @Repository
 @RequiredArgsConstructor
 public class ScheduledBackupRepositoryImpl implements ScheduledBackupRepositoryCustom {
@@ -95,4 +105,4 @@ public class ScheduledBackupRepositoryImpl implements ScheduledBackupRepositoryC
             default        -> new OrderSpecifier<>(order, sb.startedAt); // 기본 startedAt
         };
     }
-}
+}*/

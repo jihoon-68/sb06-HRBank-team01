@@ -1,6 +1,6 @@
-package com.sprint.hrbank_sb6_1.backup.dto;
+package com.sprint.hrbank_sb6_1.backup.scheduled.dto;
 
-import com.sprint.hrbank_sb6_1.backup.domain.ScheduledBackupStatus;
+import com.sprint.hrbank_sb6_1.backup.scheduled.domain.ScheduledBackupStatus;
 import lombok.Getter;
 import lombok.Setter;
 

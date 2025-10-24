@@ -1,6 +1,6 @@
 package com.sprint.hrbank_sb6_1.backup.scheduler;
 
-import com.sprint.hrbank_sb6_1.backup.service.ScheduledBackupService;
+import com.sprint.hrbank_sb6_1.backup.scheduled.service.ScheduledBackupService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

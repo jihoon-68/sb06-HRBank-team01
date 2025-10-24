@@ -1,4 +1,4 @@
-package com.sprint.hrbank_sb6_1.backup.domain;
+package com.sprint.hrbank_sb6_1.backup.scheduled.domain;
 
 import com.sprint.hrbank_sb6_1.domain.File;
 import jakarta.persistence.*;
