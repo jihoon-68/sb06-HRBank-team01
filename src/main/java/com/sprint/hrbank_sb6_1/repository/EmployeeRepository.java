@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 public interface EmployeeRepository extends JpaRepository<Employee, Long>, EmployeeRepositoryCustom {
     boolean existsByEmail(String email);
+    Integer countByDepartmentId(Long departmentId);
 
     @Query("SELECT e FROM Employee e")
     Stream<Employee> streamAll();

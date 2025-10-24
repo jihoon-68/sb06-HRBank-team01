@@ -8,29 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
-import java.util.List;
 
-public interface DepartmentRepository extends JpaRepository<Department, Integer> {
+public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
   boolean existsByName(String name);
-
-//  // 이름 + 설명 검색 (DATE 오름차순)
-//  @Query("""
-//        SELECT d FROM Department d
-//        WHERE (:q IS NULL OR d.name LIKE %:q% OR d.description LIKE %:q%)
-//          AND (
-//              (:afterDate IS NULL)
-//              OR (d.establishedDate > CAST(:afterDate AS date))
-//              OR (d.establishedDate = CAST(:afterDate AS date) AND d.id > :idAfter)
-//          )
-//        ORDER BY d.establishedDate ASC, d.id ASC
-//    """)
-//  List<Department> findNextByDateAsc(
-//      @Param("q") String q,
-//      @Param("afterDate") LocalDate afterDate,
-//      @Param("idAfter") Integer idAfter,
-//      Pageable pageable
-//  );
 
   @Query("""
   SELECT d FROM Department d
@@ -45,7 +26,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Integer>
   ORDER BY d.establishedDate ASC, d.id ASC
 """)
   Page<Department> findNextByDateAsc(
-      @Param("q") String q,            // ← 여기로 qLowerLike 그대로 넣음 (이미 %..% + lower 처리됨)
+      @Param("q") String q,
       @Param("afterDate") LocalDate afterDate,
       @Param("idAfter") Long idAfter,
       Pageable pageable
@@ -83,7 +64,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Integer>
   Page<Department> findNextByNameAsc(
       @Param("q") String q,
       @Param("afterName") String afterName,
-      @Param("idAfter") Integer idAfter,
+      @Param("idAfter") Long idAfter,
       Pageable pageable
   );
 
@@ -101,7 +82,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Integer>
   Page<Department> findNextByNameDesc(
       @Param("q") String q,
       @Param("afterName") String afterName,
-      @Param("idAfter") Integer idAfter,
+      @Param("idAfter") Long idAfter,
       Pageable pageable
   );
 

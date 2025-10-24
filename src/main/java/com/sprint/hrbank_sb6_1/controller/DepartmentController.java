@@ -1,13 +1,15 @@
 package com.sprint.hrbank_sb6_1.controller;
 
-import com.sprint.hrbank_sb6_1.dto.CursorPagedResponse;
+import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
 import com.sprint.hrbank_sb6_1.dto.DepartmentCreateRequest;
 import com.sprint.hrbank_sb6_1.dto.DepartmentResponse;
 import com.sprint.hrbank_sb6_1.dto.DepartmentSearchCond;
 import com.sprint.hrbank_sb6_1.dto.DepartmentSortBy;
 import com.sprint.hrbank_sb6_1.dto.DepartmentUpdateRequest;
 import com.sprint.hrbank_sb6_1.dto.SortDirection;
+import com.sprint.hrbank_sb6_1.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,12 +21,16 @@ public class DepartmentController {
   private final DepartmentService departmentService;
 
   @PostMapping(path="/departments")
-  public DepartmentResponse create(@RequestBody DepartmentCreateRequest dto) {
-    return departmentService.create(dto);
+  public ResponseEntity<DepartmentResponse> create(@RequestBody DepartmentCreateRequest dto) {
+    var created = departmentService.create(dto);
+
+    return ResponseEntity
+        .status(HttpStatus.CREATED) // 201 상태코드
+        .body(created);
   }
 
   @GetMapping("/departments")
-  public CursorPagedResponse<DepartmentResponse> findDepartments(
+  public ResponseEntity<CursorPageResponse<DepartmentResponse>> findDepartments(
       @RequestParam(required = false) String nameOrDescription,
       @RequestParam(required = false) Long idAfter,
       @RequestParam(required = false) String cursor,
@@ -35,12 +41,20 @@ public class DepartmentController {
     DepartmentSearchCond cond = new DepartmentSearchCond(
         nameOrDescription, idAfter, cursor, size, sortField, sortDirection
     );
-    return departmentService.findAll(cond);
+    var res = departmentService.findAll(cond);
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(res);
   }
 
   @GetMapping("/departments/{id}")
-  public DepartmentResponse get(@PathVariable Long id) {
-    return departmentService.findById(id);
+  public ResponseEntity<DepartmentResponse> get(@PathVariable Long id) {
+    var res = departmentService.findById(id);
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .body(res);
   }
 
   @DeleteMapping("/departments/{id}")
