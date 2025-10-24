@@ -9,7 +9,6 @@ import com.sprint.hrbank_sb6_1.repository.BackupRepository;
 import com.sprint.hrbank_sb6_1.repository.EmployeeRepository;
 import com.sprint.hrbank_sb6_1.repository.FileRepository;
 import com.sprint.hrbank_sb6_1.service.BackupIoService;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -118,7 +117,7 @@ public class BasicBackupIoService implements BackupIoService {
                 //백업 상태 실패로 변경
                 backup.setStatus(BackupStatus.FAILED);
                 backup.setEndedAt(LocalDateTime.now());
-
+/*
                 //백업 실패 로그 파일 작성
                 String logFileName = TIMESTAMP+".log";
                 Path logPath = Paths.get(String.valueOf(rootPath), logFileName);
@@ -129,6 +128,8 @@ public class BasicBackupIoService implements BackupIoService {
                 fileRepository.save(logFile);
                 backupRepository.save(backup);
                 log.info("불완전한 백업 파일을 삭제했습니다: {}", file);
+
+ */
             } catch (IOException ex) {
                 log.error("불완전한 백업 파일 삭제에 실패했습니다: {}", file, ex);
             }
