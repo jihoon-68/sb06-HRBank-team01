@@ -1,10 +1,10 @@
 package com.sprint.hrbank_sb6_1.service.basic;
 
 import com.sprint.hrbank_sb6_1.domain.Backup;
-import com.sprint.hrbank_sb6_1.domain.BackupStatus;
 import com.sprint.hrbank_sb6_1.domain.Employee;
 import com.sprint.hrbank_sb6_1.domain.File;
 import com.sprint.hrbank_sb6_1.event.BackupEvent;
+import com.sprint.hrbank_sb6_1.event.BackupIoEvent;
 import com.sprint.hrbank_sb6_1.repository.BackupRepository;
 import com.sprint.hrbank_sb6_1.repository.EmployeeRepository;
 import com.sprint.hrbank_sb6_1.repository.FileRepository;
@@ -12,6 +12,7 @@ import com.sprint.hrbank_sb6_1.service.BackupIoService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
@@ -34,19 +35,18 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @Transactional
 public class BasicBackupIoService implements BackupIoService {
     private final BackupRepository backupRepository;
-    private final FileRepository fileRepository;
     private final EmployeeRepository employeeRepository;
-
+    private final ApplicationEventPublisher eventPublisher;
     private final Path rootPath;
 
     public BasicBackupIoService(BackupRepository backupRepository,
-                                FileRepository fileRepository,
                                 EmployeeRepository employeeRepository,
+                                ApplicationEventPublisher eventPublisher,
                                 @Value("${spring.hrbank.storage.local.root-path}") String path
     ) {
         this.backupRepository = backupRepository;
-        this.fileRepository = fileRepository;
         this.employeeRepository = employeeRepository;
+        this.eventPublisher = eventPublisher;
         this.rootPath = Paths.get(System.getProperty("user.dir"), path);
     }
 
@@ -55,11 +55,11 @@ public class BasicBackupIoService implements BackupIoService {
     @Async
     @Override
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    //@Transactional
+    @Transactional
     public void saveBackupData(BackupEvent event) {
 
         //현재 작업 중인 백업 객체 조회
-        Backup backup = backupRepository.findById(event.getId())
+        Backup backup = backupRepository.findById(event.id())
                 .orElseThrow(() -> new NoSuchElementException("Backup not found"));
 
         //파일 주소 설정
@@ -67,11 +67,6 @@ public class BasicBackupIoService implements BackupIoService {
         Path path = Paths.get(String.valueOf(rootPath), fileName);
 
         log.info("비동기 CSV 백업 작업을 시작합니다. 저장 위치: {}", path);
-
-        //백업 파일 객체 생상 설정
-        File file = new File();
-        file.setName(fileName);
-        file.setType("text/csv");
 
         try {
             Files.createDirectories(rootPath);
@@ -95,17 +90,10 @@ public class BasicBackupIoService implements BackupIoService {
             }
             log.info("비동기 CSV 백업 작업 성공. {}", path);
 
-            //파일 사이즈 추가
-            file.setSize((int) Files.size(path));
+            //백업상태,파일정보 저장 이벤트 등록
+            eventPublisher.publishEvent(new BackupIoEvent(backup,fileName,"text/csv",(int) Files.size(path),false));
 
-            //백업 상태 성공으로 변경
-            backup.markCompleted(file);
-
-            //파일정보, 백업정보 저장
-            fileRepository.save(file);
-            backupRepository.save(backup);
-
-            log.info("비동기 CSV 백업 파일 정보 저장 성공. {}", file);
+            log.info("비동기 CSV 백업 파일 정보 저장 성공. {}", fileName);
         } catch (Exception e) {
             log.error("비동기 CSV 백업 작업, 백업 파일 정보 저장 중 심각한 오류 발생: {}", e.getMessage());
             try {
@@ -116,18 +104,14 @@ public class BasicBackupIoService implements BackupIoService {
                 String logFileName = TIMESTAMP+".log";
                 Path logPath = Paths.get(String.valueOf(rootPath), logFileName);
                 Files.writeString(logPath, e.toString(), UTF_8);
-                File logFile = new File(null,logFileName,"text/plain",(int)Files.size(logPath));
 
-                //백업 상태 실패로 변경
-                backup.markFailed(logFile);
+                //백업상태,파일정보 저장 이벤트 등록
+                eventPublisher.publishEvent(new BackupIoEvent(backup,logFileName,"text/plain",(int) Files.size(path),true));
 
-                //백업 정보, 에러 로그 파일 정보 저장
-                fileRepository.save(logFile);
-                backupRepository.save(backup);
-                log.info("불완전한 백업 파일을 삭제했습니다: {}", file);
+                log.info("불완전한 백업 파일을 삭제했습니다: {}", fileName);
 
             } catch (IOException ex) {
-                log.error("불완전한 백업 파일 삭제에 실패했습니다: {}", file, ex);
+                log.error("불완전한 백업 파일 삭제와 로그생성에 실패했습니다: {}", fileName, ex);
             }
         }
     }
