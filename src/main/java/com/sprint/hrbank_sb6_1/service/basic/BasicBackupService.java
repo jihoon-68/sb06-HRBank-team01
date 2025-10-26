@@ -6,7 +6,7 @@ import com.sprint.hrbank_sb6_1.domain.File;
 import com.sprint.hrbank_sb6_1.dto.BackupDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageBackupDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseBackupDto;
-import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
+import com.sprint.hrbank_sb6_1.dto.request.SearchBackupRequest;
 import com.sprint.hrbank_sb6_1.event.BackupEvent;
 import com.sprint.hrbank_sb6_1.event.BackupIoEvent;
 import com.sprint.hrbank_sb6_1.mapper.BackupMapper;
@@ -22,7 +22,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.Files;
 import java.time.LocalDateTime;
 
 
@@ -97,14 +96,17 @@ public class BasicBackupService implements BackupService {
     @Transactional
     protected void setBackupStatus(BackupIoEvent backupIoEvent) {
         Backup backup= backupIoEvent.backup();
+        //BackupIo 받아온 파일 정보로 파일 객체 생성
         File file = new File(null , backupIoEvent.fileName() , backupIoEvent.type() , backupIoEvent.size());
 
+        //err여부로 백업 상태 변경 과 파일 추가
         if(backupIoEvent.err()){
             backup.markFailed(file);
         }else {
            backup.markCompleted(file);
         }
 
+        //백업, 파일정보 저장
         backupRepository.save(backup);
         fileRepository.save(file);
     }

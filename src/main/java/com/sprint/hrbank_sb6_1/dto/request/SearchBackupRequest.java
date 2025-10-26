@@ -1,4 +1,4 @@
-package com.sprint.hrbank_sb6_1.dto;
+package com.sprint.hrbank_sb6_1.dto.request;
 
 import com.sprint.hrbank_sb6_1.domain.BackupStatus;
 import lombok.Data;
