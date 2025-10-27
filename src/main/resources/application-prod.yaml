@@ -7,11 +7,11 @@ spring:
       maxRequestSize: 30MB  #
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/hrbank
-    username: team01
-    password: team01
+    url: ${DATABASE_URL}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
     driver-class-name: org.postgresql.Driver
-    
+
   jpa:
     hibernate:
       ddl-auto: create   # ?? ????? validate ?? none ??
