@@ -19,6 +19,7 @@ import com.sprint.hrbank_sb6_1.repository.FileRepository;
 import com.sprint.hrbank_sb6_1.service.EmployeeService;
 import com.sprint.hrbank_sb6_1.service.storage.FileStorage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -110,7 +112,7 @@ public class BasicEmployeeService implements EmployeeService {
         Employee before = employee.clone(); //준영속
 
         employee.update(department, employeeUpdateRequest.getName(), employeeUpdateRequest.getPosition(),
-                employeeUpdateRequest.getEmail(), EmployeeStatus.fromDescription(employeeUpdateRequest.getStatus()), nullableProfile,
+                employeeUpdateRequest.getEmail(), employeeUpdateRequest.getStatus(), nullableProfile,
                 LocalDate.parse(employeeUpdateRequest.getHireDate()));
 
         Employee updatedEmployee = employeeRepository.save(employee);
@@ -169,7 +171,7 @@ public class BasicEmployeeService implements EmployeeService {
                     if (employeeTrends.indexOf(employeeTrend) > 0) {
                         EmployeeTrendDto before = employeeTrends.get(employeeTrends.indexOf(employeeTrend) - 1);
                         employeeTrend.setChange((int) (employeeTrend.getCount() - before.getCount()));
-                        employeeTrend.setChangeRate(employeeTrend.getChange() == 0 ?
+                        employeeTrend.setChangeRate(employeeTrend.getChange() == 0 || before.getCount() == 0?
                                 0.0 : Math.round((double) employeeTrend.getChange() / before.getCount() * 100 * 10) / 10);
                     }
                 });
@@ -216,6 +218,7 @@ public class BasicEmployeeService implements EmployeeService {
 
     private void changeLog(String ip, ChangeLogStatus changeLogStatus, String memo, Employee before, Employee after) {
         try {
+            log.warn("changeLog 진입");
             List<Map<String, String>> changeLogList = new ArrayList<>();
 
             if (!Objects.equals(before.getName(), after.getName())) {
@@ -291,7 +294,7 @@ public class BasicEmployeeService implements EmployeeService {
                     .description(json)
                     .status(changeLogStatus.getCode())
                     .build();
-
+            log.info(json);
             changeLogRepository.save(changeLog);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("직원 변경 이력 작성에 실패했습니다.");
