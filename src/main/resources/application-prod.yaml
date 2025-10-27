@@ -35,12 +35,12 @@ spring:
       local:
         root-path: .files
 
-  logging:
-    level:
-      root: DEBUG
-      org.hibernate.SQL: DEBUG            # ???? SQL ??
-      org.hibernate.type.descriptor.sql: TRACE  # SQL? ????? ???? ? ??
-
   backup:
     schedule:
       rate: 0 0/30 * * * * #자동 백업 시간 현재: 30분
+
+logging:
+  level:
+    org.hibernate.engine.jdbc.connection: DEBUG
+    com.zaxxer.hikari: DEBUG
+
