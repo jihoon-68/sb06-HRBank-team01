@@ -132,8 +132,9 @@ public class BasicEmployeeService implements EmployeeService {
         if (employee.getProfileImage() != null) {
             fileRepository.delete(employee.getProfileImage());
         }
-        employeeRepository.delete(employee);
         changeLog(ip, ChangeLogStatus.DELETED, "직원 삭제", employee, new Employee());
+        employeeRepository.delete(employee);
+
     }
 
     @Override
@@ -222,7 +223,7 @@ public class BasicEmployeeService implements EmployeeService {
         log.warn("changeLog 진입");
         List<Map<String, String>> changeLogList = new ArrayList<>();
 
-        Employee changeLogEmployee = changeLogStatus.getDescription().equals("Deleted") ? null : after;
+        Employee changeLogEmployee = changeLogStatus.getDescription().equals("DELETED") ? null : after;
         ChangeLog changeLog = ChangeLog.builder()
             .memo(memo)
             .at(LocalDateTime.now())
@@ -315,7 +316,7 @@ public class BasicEmployeeService implements EmployeeService {
                 .changeLog(changeLog)
                 .build();
 
-            changeLogRepository.save(changeLog);
+            changeDiffRepository.save(changeDiff);
         }
     }
 
