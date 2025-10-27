@@ -2,16 +2,13 @@ package com.sprint.hrbank_sb6_1.service.changelog;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.hrbank_sb6_1.domain.ChangeLog;
-import com.sprint.hrbank_sb6_1.domain.ChangeLogStatus;
 import com.sprint.hrbank_sb6_1.dto.ChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.DiffDto;
 import com.sprint.hrbank_sb6_1.repository.ChangeLogRepository;
 import jakarta.transaction.Transactional;
-import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +27,7 @@ public class ChangeLogServiceImpl implements ChangeLogService {
     @Override
     public CursorPageResponseChangeLogDto getChangeLog(
         String employeeNumber,
-        String type,
+        int type,
         String memo,
         String ipAddress,
         LocalDateTime atFrom,
@@ -44,14 +41,9 @@ public class ChangeLogServiceImpl implements ChangeLogService {
             "desc".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(0, size, Sort.by(direction, sortField));
 
-        // Enum 변환
-        ChangeLogStatus status = (type != null && !type.isBlank())
-            ? ChangeLogStatus.valueOf(type)
-            : null;
-
         List<ChangeLog> logs = changeLogRepository.searchChangeLogs(
             employeeNumber,
-            status,
+            type,
             memo,
             ipAddress,
             atFrom,
