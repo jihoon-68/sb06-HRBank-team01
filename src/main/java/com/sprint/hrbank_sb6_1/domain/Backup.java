@@ -1,6 +1,5 @@
 package com.sprint.hrbank_sb6_1.domain;
 
-import com.sprint.hrbank_sb6_1.backup.scheduled.domain.ScheduledBackupStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;

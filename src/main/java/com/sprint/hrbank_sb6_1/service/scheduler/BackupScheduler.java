@@ -1,4 +1,4 @@
-package com.sprint.hrbank_sb6_1.backup.scheduler;
+package com.sprint.hrbank_sb6_1.service.scheduler;
 
 import com.sprint.hrbank_sb6_1.service.BackupService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ public class BackupScheduler {
 
     private final BackupService backupService;
 
-    @Scheduled(cron = "${backup.schedule.cron:0 * * * * *}")
+    @Scheduled(cron = "${backup.schedule.rate}")
     public void executeBackup() {
         log.info("🔁 자동 백업 스케줄러 시작");
         try {
