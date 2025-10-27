@@ -3,10 +3,14 @@ package com.sprint.hrbank_sb6_1.controller;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.DiffDto;
 import com.sprint.hrbank_sb6_1.service.changelog.ChangeLogService;
+import jakarta.validation.constraints.Size;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/change-logs")
+@Slf4j
 public class ChangeLogController {
 
     private final ChangeLogService changeLogService;
@@ -52,9 +57,11 @@ public class ChangeLogController {
 
     @GetMapping("/count")
     public ResponseEntity<Long> countChangeLogs(
-        @RequestParam(required = false) LocalDateTime fromDate, @RequestParam(required = false) LocalDateTime toDate) {
+        @RequestParam(required = false) Instant fromDate, @RequestParam(required = false) Instant toDate) {
         return ResponseEntity.ok(
-            changeLogService.countChangeLogs(fromDate, toDate)
+            changeLogService.countChangeLogs(
+                LocalDateTime.ofInstant(fromDate, ZoneId.of("Asia/Seoul")), LocalDateTime.ofInstant(toDate, ZoneId.of("Asia/Seoul"))
+            )
         );
     }
 }
