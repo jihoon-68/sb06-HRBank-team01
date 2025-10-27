@@ -1,6 +1,6 @@
 package com.sprint.hrbank_sb6_1.repository;
 import com.sprint.hrbank_sb6_1.domain.Backup;
-import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
+import com.sprint.hrbank_sb6_1.dto.request.SearchBackupRequest;
 
 import org.springframework.data.domain.Slice;
 

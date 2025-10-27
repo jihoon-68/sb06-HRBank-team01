@@ -43,4 +43,4 @@ spring:
 
       backup:
         schedule:
-          rate: 3600000
+          rate: 36000000 #자동 백업 시간 현재: 10분
