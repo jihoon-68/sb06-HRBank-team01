@@ -2,18 +2,20 @@ package com.sprint.hrbank_sb6_1.service.changelog;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.hrbank_sb6_1.domain.ChangeDiff;
 import com.sprint.hrbank_sb6_1.domain.ChangeLog;
 import com.sprint.hrbank_sb6_1.domain.ChangeLogStatus;
 import com.sprint.hrbank_sb6_1.dto.ChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.DiffDto;
+import com.sprint.hrbank_sb6_1.repository.ChangeDiffRepository;
 import com.sprint.hrbank_sb6_1.repository.ChangeLogRepository;
 import jakarta.transaction.Transactional;
-import java.lang.reflect.Type;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 public class ChangeLogServiceImpl implements ChangeLogService {
 
     private final ChangeLogRepository changeLogRepository;
+    private final ChangeDiffRepository changeDiffRepository;
 
     @Override
     public CursorPageResponseChangeLogDto getChangeLog(
@@ -44,14 +47,11 @@ public class ChangeLogServiceImpl implements ChangeLogService {
             "desc".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(0, size, Sort.by(direction, sortField));
 
-        // Enum 변환
-        ChangeLogStatus status = (type != null && !type.isBlank())
-            ? ChangeLogStatus.valueOf(type)
-            : null;
+        int code = !type.equals("0") ? ChangeLogStatus.fromDescription(type).getCode() : 0;
 
         List<ChangeLog> logs = changeLogRepository.searchChangeLogs(
             employeeNumber,
-            status,
+            code,
             memo,
             ipAddress,
             atFrom,
@@ -79,21 +79,17 @@ public class ChangeLogServiceImpl implements ChangeLogService {
 
     @Override
     public List<DiffDto> getChangeLogDiffs(Long changeLogId) {
+        ChangeLog changeLog = changeLogRepository.findById(changeLogId).orElseThrow(
+            () -> new NoSuchElementException("invaild changeLog Id")
+        );
 
-        ObjectMapper objectMapper = new ObjectMapper();
+        List<ChangeDiff> changeDiffs = changeDiffRepository.findByChangeLog(changeLog);
 
-        try {
-            ChangeLog changeLog = changeLogRepository.findById(changeLogId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                    "ChangeLog not found with id: " + changeLogId));
+        List<DiffDto> diffDtos = changeDiffs.stream()
+            .map(DiffDto::from)
+            .toList();
 
-            return objectMapper.readValue(changeLog.getDescription(),
-                new TypeReference<List<DiffDto>>() {
-                });
-        } catch (JsonProcessingException e){
-            throw new RuntimeException("Failed to parse change log diffs", e);
-        }
-
+        return diffDtos;
     }
 
     @Override

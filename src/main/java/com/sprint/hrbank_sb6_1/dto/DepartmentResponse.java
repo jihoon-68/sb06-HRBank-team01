@@ -15,4 +15,10 @@ public record DepartmentResponse(
         d.getId(), d.getName(), d.getDescription(), d.getEstablishedDate(), employeeCount
     );
   }
+
+  public static DepartmentResponse from(Department d) {
+    return new DepartmentResponse(
+        d.getId(), d.getName(), d.getDescription(), d.getEstablishedDate(), 0
+    );
+  }
 }

@@ -20,7 +20,7 @@ public class ChangeLogRepositoryImpl implements ChangeLogRepositoryCustom{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<ChangeLog> searchChangeLogs(String employeeNumber, ChangeLogStatus type,
+    public List<ChangeLog> searchChangeLogs(String employeeNumber, int type,
         String memo, String ipAddress, LocalDateTime atFrom, LocalDateTime atTo, Long idAfter,
         Pageable pageable) {
         QChangeLog c = QChangeLog.changeLog;
@@ -35,7 +35,7 @@ public class ChangeLogRepositoryImpl implements ChangeLogRepositoryCustom{
         }
 
         // status (정확 일치)
-        if (type != null) {
+        if (type != 0) {
             builder.and(c.status.eq(type));
         }
 

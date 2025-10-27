@@ -21,13 +21,8 @@ public class ChangeLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ChangeLogStatus status;
-
-    @Lob
-    @Column(nullable = false)
-    private String description;
+    private int status;
 
     @Column
     private String memo;
