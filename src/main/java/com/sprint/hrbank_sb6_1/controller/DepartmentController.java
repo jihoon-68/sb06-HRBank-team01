@@ -20,9 +20,9 @@ public class DepartmentController {
 
   private final DepartmentService departmentService;
 
-  @PostMapping(path="/departments")
-  public ResponseEntity<DepartmentResponse> create(@RequestBody DepartmentCreateRequest dto) {
-    var created = departmentService.create(dto);
+  @PostMapping(path = "/departments")
+  public ResponseEntity<DepartmentResponse> create(@RequestBody DepartmentCreateRequest req) {
+    var created = departmentService.create(req);
 
     return ResponseEntity
         .status(HttpStatus.CREATED) // 201 상태코드
@@ -35,8 +35,8 @@ public class DepartmentController {
       @RequestParam(required = false) Long idAfter,
       @RequestParam(required = false) String cursor,
       @RequestParam(defaultValue = "10") int size,
-      @RequestParam(defaultValue = "ESTABLISHED_DATE") DepartmentSortBy sortField,
-      @RequestParam(defaultValue = "ASC") SortDirection sortDirection
+      @RequestParam(defaultValue = "establishedDate") DepartmentSortBy sortField,
+      @RequestParam(defaultValue = "asc") SortDirection sortDirection
   ) {
     DepartmentSearchCond cond = new DepartmentSearchCond(
         nameOrDescription, idAfter, cursor, size, sortField, sortDirection
@@ -60,11 +60,12 @@ public class DepartmentController {
   @DeleteMapping("/departments/{id}")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     departmentService.delete(id);
-    return ResponseEntity.ok().build();
+    return ResponseEntity.noContent().build();
   }
 
   @PatchMapping("/departments/{id}")
-  public ResponseEntity<DepartmentResponse> update(@PathVariable Long id, @RequestBody DepartmentUpdateRequest dto) {
+  public ResponseEntity<DepartmentResponse> update(@PathVariable Long id,
+      @RequestBody DepartmentUpdateRequest dto) {
     var res = departmentService.update(id, dto);
 
     return ResponseEntity.ok().body(res);
