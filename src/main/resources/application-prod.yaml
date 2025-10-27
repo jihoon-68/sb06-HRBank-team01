@@ -7,7 +7,7 @@ spring:
       maxRequestSize: 30MB  #
 
   datasource:
-    url: ${DATABASE_URL}
+    url: jdbc:postgresql://${PGHOST}:5432/${POSTGRES_DB}
     username: ${PGUSER}
     password: ${PGPASSWORD}
     driver-class-name: org.postgresql.Driver
