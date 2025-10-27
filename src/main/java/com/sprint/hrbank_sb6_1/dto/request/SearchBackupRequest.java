@@ -1,12 +1,15 @@
 package com.sprint.hrbank_sb6_1.dto.request;
 
 import com.sprint.hrbank_sb6_1.domain.BackupStatus;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@AllArgsConstructor
 public class SearchBackupRequest {
     private String worker;
     private BackupStatus status;

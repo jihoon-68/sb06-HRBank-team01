@@ -1,5 +1,6 @@
 package com.sprint.hrbank_sb6_1.domain;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -8,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Setter
@@ -24,10 +27,6 @@ public class ChangeLog {
     @Column(nullable = false)
     private int status;
 
-    @Lob
-    @Column(nullable = false)
-    private String description;
-
     @Column
     private String memo;
 
@@ -39,6 +38,7 @@ public class ChangeLog {
 
     @ManyToOne
     @JoinColumn(name = "employee_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Employee employee;
 
 }

@@ -13,7 +13,7 @@ public interface EmployeeMapper {
     @Mapping(target = "departmentName", source = "department.name")
     @Mapping(target = "departmentId", source = "department.id")
     @Mapping(target = "hireDate", expression = "java(employee.getHireDate().toString())")
-    @Mapping(target = "status", expression = "java(employee.getStatus().getDescription())")
+    @Mapping(target = "status", expression = "java(employee.getStatus().name())")
     EmployeeDto toDto(Employee employee);
 
     default Long getProfileImageId(File profile) {

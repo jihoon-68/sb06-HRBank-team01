@@ -1,5 +1,6 @@
 package com.sprint.hrbank_sb6_1.dto.request;
 
+import com.sprint.hrbank_sb6_1.domain.EmployeeStatus;
 import lombok.*;
 
 @Getter
@@ -13,6 +14,6 @@ public class EmployeeUpdateRequest {
     private Long departmentId;
     private String position;
     private String hireDate;
-    private String status;
+    private EmployeeStatus status;
     private String memo;
 }
