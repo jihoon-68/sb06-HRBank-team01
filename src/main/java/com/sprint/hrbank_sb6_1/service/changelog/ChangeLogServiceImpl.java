@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.hrbank_sb6_1.domain.ChangeDiff;
 import com.sprint.hrbank_sb6_1.domain.ChangeLog;
+import com.sprint.hrbank_sb6_1.domain.ChangeLogStatus;
 import com.sprint.hrbank_sb6_1.dto.ChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseChangeLogDto;
 import com.sprint.hrbank_sb6_1.dto.DiffDto;
@@ -32,7 +33,7 @@ public class ChangeLogServiceImpl implements ChangeLogService {
     @Override
     public CursorPageResponseChangeLogDto getChangeLog(
         String employeeNumber,
-        int type,
+        String type,
         String memo,
         String ipAddress,
         LocalDateTime atFrom,
@@ -46,9 +47,11 @@ public class ChangeLogServiceImpl implements ChangeLogService {
             "desc".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(0, size, Sort.by(direction, sortField));
 
+        int code = !type.equals("0") ? ChangeLogStatus.fromDescription(type).getCode() : 0;
+
         List<ChangeLog> logs = changeLogRepository.searchChangeLogs(
             employeeNumber,
-            type,
+            code,
             memo,
             ipAddress,
             atFrom,

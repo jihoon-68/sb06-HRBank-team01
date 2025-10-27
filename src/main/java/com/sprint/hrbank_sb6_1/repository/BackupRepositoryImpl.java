@@ -125,7 +125,6 @@ public class BackupRepositoryImpl implements BackupRepositoryCustom {
         }else if("status".equals(sortField)) {
             primaryExpression = entityPath.getString("status");
         } else {
-            sortField = "id";
             primaryExpression = entityPath.getDateTime("id", Long.class);
             return new OrderSpecifier[]{ new OrderSpecifier<>(direction, primaryExpression) };
         }

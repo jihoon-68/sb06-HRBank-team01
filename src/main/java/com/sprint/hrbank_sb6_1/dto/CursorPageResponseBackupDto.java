@@ -1,15 +1,10 @@
 package com.sprint.hrbank_sb6_1.dto;
-
-import lombok.Data;
-
 import java.util.List;
-
-@Data
-public class CursorPageResponseBackupDto {
-    List<BackupDto> content;
-    String nextCursor;
-    Long nextIdAfter;
-    int size;
-    Long totalElements;
-    boolean hasNext;
-}
+public record CursorPageResponseBackupDto(
+        List<BackupDto> content,
+        String nextCursor,
+        Long nextIdAfter,
+        int size,
+        Long totalElements,
+        boolean hasNext
+) {}

@@ -11,6 +11,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,11 +31,11 @@ public class ChangeLogController {
     @GetMapping()
     public ResponseEntity<CursorPageResponseChangeLogDto> getChangeLogs(
         @RequestParam(required = false) String employeeNumber,
-        @RequestParam(defaultValue = "0") int type,
+        @RequestParam(required = false, defaultValue = "0") String type,
         @RequestParam(required = false) String memo,
         @RequestParam(required = false) String ipAddress,
-        @RequestParam(required = false) String atFrom,
-        @RequestParam(required = false) String atTo,
+        @RequestParam(required = false) Instant atFrom,
+        @RequestParam(required = false) Instant atTo,
         @RequestParam(required = false) Long idAfter,
         @RequestParam(defaultValue = "30") int size,
         @RequestParam(defaultValue = "at") String sortField,
@@ -42,8 +43,8 @@ public class ChangeLogController {
     ) {
         CursorPageResponseChangeLogDto response = changeLogService.getChangeLog(
                 employeeNumber, type, memo, ipAddress,
-                atFrom != null ? java.time.LocalDateTime.parse(atFrom) : null,
-                atTo != null ? java.time.LocalDateTime.parse(atTo) : null,
+                atFrom != null ? LocalDateTime.ofInstant(atFrom, ZoneId.of("Asia/Seoul")) : null,
+                atTo != null ? java.time.LocalDateTime.ofInstant(atTo, ZoneId.of("Asia/Seoul")) : null,
                 idAfter, size, sortField, sortDirection
         );
         return ResponseEntity.ok(response);
