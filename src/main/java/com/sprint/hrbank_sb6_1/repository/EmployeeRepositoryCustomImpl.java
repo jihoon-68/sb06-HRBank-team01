@@ -1,10 +1,8 @@
 package com.sprint.hrbank_sb6_1.repository;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.hrbank_sb6_1.domain.Employee;
 import com.sprint.hrbank_sb6_1.domain.EmployeeStatus;
@@ -12,17 +10,21 @@ import com.sprint.hrbank_sb6_1.domain.QEmployee;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponse;
 import com.sprint.hrbank_sb6_1.dto.data.EmployeeTrendDto;
 import com.sprint.hrbank_sb6_1.dto.request.EmployeeFindAllRequest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
 public class EmployeeRepositoryCustomImpl implements EmployeeRepositoryCustom {
     private final JPAQueryFactory queryFactory;
+    private final EntityManager entityManager;
     private final QEmployee employee = QEmployee.employee;
 
     @Override
@@ -81,30 +83,63 @@ public class EmployeeRepositoryCustomImpl implements EmployeeRepositoryCustom {
 
     @Override
     public List<EmployeeTrendDto> getTrend(LocalDate from, LocalDate to, String unit) {
-        StringTemplate dateFormat = switch (unit) {
-            case "day" -> Expressions.stringTemplate(
-                    "TO_CHAR({0}, 'YYYY-MM-DD')", employee.hireDate);
-            case "week" -> Expressions.stringTemplate(
-                    "TO_CHAR(DATE_TRUNC('week', {0}), 'YYYY-MM-DD')", employee.hireDate);
-            case "quarter" -> Expressions.stringTemplate(
-                    "TO_CHAR(DATE_TRUNC('quarter', {0}), 'YYYY-MM-DD')", employee.hireDate);
-            case "year" -> Expressions.stringTemplate(
-                    "TO_CHAR(DATE_TRUNC('year', {0}), 'YYYY-MM-DD')", employee.hireDate);
-            default -> Expressions.stringTemplate(
-                    "TO_CHAR(DATE_TRUNC('month', {0}), 'YYYY-MM-DD')", employee.hireDate);
+        String dateTrunc = switch (unit) {
+            case "day" -> "day";
+            case "week" -> "week";
+            case "quarter" -> "quarter";
+            case "year" -> "year";
+            default -> "month";
         };
 
-        return queryFactory
-                .select(Projections.constructor(EmployeeTrendDto.class,
-                        dateFormat.as("date"),
-                        employee.count().as("count")
+        String periodEnd = switch (unit) {
+            case "day" -> "ds.period_date";
+            case "week" -> "ds.period_date + INTERVAL '6 days'";
+            case "quarter" -> "ds.period_date + INTERVAL '3 months' - INTERVAL '1 day'";
+            case "year" -> "ds.period_date + INTERVAL '1 year' - INTERVAL '1 day'";
+            default -> "ds.period_date + INTERVAL '1 month' - INTERVAL '1 day'";
+        };
+
+        String intervalIncrement = switch (unit) {
+            case "day" -> "INTERVAL '1 day'";
+            case "week" -> "INTERVAL '1 week'";
+            case "quarter" -> "INTERVAL '3 months'";
+            case "year" -> "INTERVAL '1 year'";
+            default -> "INTERVAL '1 month'";
+        };
+
+        String sql = String.format("""
+            WITH RECURSIVE date_series AS (
+                SELECT DATE_TRUNC(:trunc, CAST(:from AS date)) as period_date
+                UNION ALL
+                SELECT period_date + %s
+                FROM date_series
+                WHERE period_date < DATE_TRUNC(:trunc, CAST(:to AS date))
+            )
+            SELECT 
+                TO_CHAR(ds.period_date, 'YYYY-MM-DD') as date,
+                COUNT(e.id) as count
+            FROM date_series ds
+            LEFT JOIN employee e ON e.hire_date <= %s
+            GROUP BY ds.period_date
+            ORDER BY ds.period_date
+            """, intervalIncrement, periodEnd);
+
+        Query query = entityManager.createNativeQuery(sql);
+        query.setParameter("from", from);
+        query.setParameter("to", to);
+        query.setParameter("trunc", dateTrunc);
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> results = query.getResultList();
+
+        return results.stream()
+                .map(row -> new EmployeeTrendDto(
+                        (String) row[0],           // date
+                        ((Number) row[1]).longValue()  // count
                 ))
-                .from(employee)
-                .where(employee.hireDate.between(from, to))
-                .groupBy(dateFormat)
-                .orderBy(dateFormat.asc())
-                .fetch();
+                .collect(Collectors.toList());
     }
+
 
     @Override
     public Long getCount(EmployeeStatus status, LocalDate hireDateFrom, LocalDate hireDateTo) {
