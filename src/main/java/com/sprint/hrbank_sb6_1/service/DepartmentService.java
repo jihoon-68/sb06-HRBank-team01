@@ -36,33 +36,26 @@ public class DepartmentService {
     Department saved = departmentRepository.save(
         new Department(req.name(), req.description(), req.establishedDate())
     );
-    return DepartmentResponse.of(saved, 0);
+    return DepartmentResponse.from(saved);
   }
 
   public DepartmentResponse findById(Long id) {
-    Department d = departmentRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("부서를 찾을 수 없습니다: " + id));
+    Department d = getDepartment(id);
     var employeeCount = employeeRepository.countByDepartmentId(d.getId());
     return DepartmentResponse.of(d, employeeCount);
   }
 
   @Transactional
   public DepartmentResponse update(Long id, DepartmentUpdateRequest req) {
-    Department d = departmentRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("부서를 찾을 수 없습니다: " + id));
+    Department d = getDepartment(id);
 
     if (req.name() != null && !req.name().equals(d.getName())) {
       if (departmentRepository.existsByName(req.name())) {
         throw new IllegalArgumentException("이미 존재하는 부서명입니다: " + req.name());
       }
-      d.setName(req.name());
     }
-    if (req.description() != null) {
-      d.setDescription(req.description());
-    }
-    if (req.establishedDate() != null) {
-      d.setEstablishedDate(req.establishedDate());
-    }
+
+    d.update(req);
 
     var employeeCount = employeeRepository.countByDepartmentId(d.getId());
     return DepartmentResponse.of(d, employeeCount);
@@ -70,9 +63,7 @@ public class DepartmentService {
 
   @Transactional
   public void delete(Long id) {
-    Department d = departmentRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("부서를 찾을 수 없습니다: " + id));
-
+    Department d = getDepartment(id);
     var employeeCount = employeeRepository.countByDepartmentId(d.getId());
 
     if (employeeCount > 0) {
@@ -119,22 +110,31 @@ public class DepartmentService {
     LocalDate dateKey = convertedDateKey(cond);
     Long idKey = convertedIdKey(cond);
 
-    if (cond.sortField() == DepartmentSortBy.NAME) {
+    if (cond.sortField() == DepartmentSortBy.name) {
       if (isAsc(cond)) {
-        return departmentRepository.findNextByDateAsc(convertedNameOrDescription, dateKey, idKey, Pageable.ofSize(cond.size()));
+        return departmentRepository.findNextByNameAsc(convertedNameOrDescription, cond.cursor(),
+            idKey, Pageable.ofSize(cond.size()));
       }
-      return departmentRepository.findNextByDateDesc(convertedNameOrDescription, dateKey, idKey, Pageable.ofSize(cond.size()));
+      return departmentRepository.findNextByNameDesc(convertedNameOrDescription, cond.cursor(),
+          idKey, Pageable.ofSize(cond.size()));
     }
 
     if (isAsc(cond)) {
-      return departmentRepository.findNextByDateAsc(convertedNameOrDescription, dateKey, idKey, Pageable.ofSize(cond.size()));
+      return departmentRepository.findNextByDateAsc(convertedNameOrDescription, dateKey, idKey,
+          Pageable.ofSize(cond.size()));
     }
 
-    return departmentRepository.findNextByDateDesc(convertedNameOrDescription, dateKey, idKey, Pageable.ofSize(cond.size()));
+    return departmentRepository.findNextByDateDesc(convertedNameOrDescription, dateKey, idKey,
+        Pageable.ofSize(cond.size()));
+  }
+
+  private Department getDepartment(Long id) {
+    return departmentRepository.findById(id)
+        .orElseThrow(() -> new NoSuchElementException("부서를 찾을 수 없습니다: " + id));
   }
 
   private boolean isAsc(DepartmentSearchCond cond) {
-    return cond.sortDirection() == null || cond.sortDirection() == SortDirection.ASC;
+    return cond.sortDirection() == null || cond.sortDirection() == SortDirection.asc;
   }
 
   private LocalDate convertedDateKey(DepartmentSearchCond cond) {
