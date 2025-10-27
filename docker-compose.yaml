@@ -1,17 +1,17 @@
-services:
-  postgres-db:
-    image: postgres:17
-    container_name: postgres_hrbank
-    environment:
-      POSTGRES_USER: team01
-      POSTGRES_PASSWORD: team01
-      POSTGRES_DB: hrbank
-      TZ: Asia/Seoul
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
-    ports:
-      - "5432:5432"
-    volumes:
-      - hrbank_db_data:/var/lib/postgresql/data
-
-volumes:
-  hrbank_db_data:
+#services:
+#  postgres-db:
+#    image: postgres:17
+#    container_name: postgres_hrbank
+#    environment:
+#      POSTGRES_USER: team01
+#      POSTGRES_PASSWORD: team01
+#      POSTGRES_DB: hrbank
+#      TZ: Asia/Seoul
+#      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+#    ports:
+#      - "5432:5432"
+#    volumes:
+#      - hrbank_db_data:/var/lib/postgresql/data
+#
+#volumes:
+#  hrbank_db_data:
