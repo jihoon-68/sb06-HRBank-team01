@@ -24,10 +24,6 @@ public class ChangeLog {
     @Column(nullable = false)
     private int status;
 
-    @Lob
-    @Column(nullable = false)
-    private String description;
-
     @Column
     private String memo;
 
