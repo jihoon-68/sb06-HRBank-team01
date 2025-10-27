@@ -9,7 +9,7 @@ public interface ChangeLogService {
 
     CursorPageResponseChangeLogDto getChangeLog(
         String employeeNumber,
-        int type,
+        String type,
         String memo,
         String ipAddress,
         LocalDateTime atFrom,

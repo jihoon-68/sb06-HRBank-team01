@@ -21,4 +21,13 @@ public enum ChangeLogStatus {
         }
         throw new IllegalArgumentException("Invalid ChangeLogStatus code: " + code);
     }
+
+    public static ChangeLogStatus fromDescription(String description) {
+        for(ChangeLogStatus status : ChangeLogStatus.values()) {
+            if(status.getDescription().equals(description)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Invalid ChangeLogStatus description: " + description);
+    }
 }
