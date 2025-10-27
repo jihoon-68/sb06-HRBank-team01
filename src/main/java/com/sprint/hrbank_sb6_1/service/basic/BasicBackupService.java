@@ -2,18 +2,22 @@ package com.sprint.hrbank_sb6_1.service.basic;
 
 import com.sprint.hrbank_sb6_1.domain.Backup;
 import com.sprint.hrbank_sb6_1.domain.BackupStatus;
+import com.sprint.hrbank_sb6_1.domain.File;
 import com.sprint.hrbank_sb6_1.dto.BackupDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageBackupDto;
 import com.sprint.hrbank_sb6_1.dto.CursorPageResponseBackupDto;
-import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
+import com.sprint.hrbank_sb6_1.dto.request.SearchBackupRequest;
 import com.sprint.hrbank_sb6_1.event.BackupEvent;
+import com.sprint.hrbank_sb6_1.event.BackupIoEvent;
 import com.sprint.hrbank_sb6_1.mapper.BackupMapper;
 import com.sprint.hrbank_sb6_1.mapper.BackupPagingMapper;
 import com.sprint.hrbank_sb6_1.repository.BackupRepository;
 import com.sprint.hrbank_sb6_1.repository.ChangeLogRepository;
+import com.sprint.hrbank_sb6_1.repository.FileRepository;
 import com.sprint.hrbank_sb6_1.service.BackupService;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +32,7 @@ public class BasicBackupService implements BackupService {
     private final BackupMapper backupMapper;
     private final BackupPagingMapper backupPagingMapper;
     private final ChangeLogRepository changeLogRepository;
+    private final FileRepository fileRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -85,5 +90,24 @@ public class BasicBackupService implements BackupService {
     public BackupDto GetBackupByStatus(BackupStatus status) {
         Backup backup =backupRepository.findTopByStatusOrderByStartedAtDesc(status).orElse(null);
         return backupMapper.toBackupDto(backup);
+    }
+
+    @EventListener
+    @Transactional
+    protected void setBackupStatus(BackupIoEvent backupIoEvent) {
+        Backup backup= backupIoEvent.backup();
+        //BackupIo 받아온 파일 정보로 파일 객체 생성
+        File file = new File(null , backupIoEvent.fileName() , backupIoEvent.type() , backupIoEvent.size());
+
+        //err여부로 백업 상태 변경 과 파일 추가
+        if(backupIoEvent.err()){
+            backup.markFailed(file);
+        }else {
+           backup.markCompleted(file);
+        }
+
+        //백업, 파일정보 저장
+        backupRepository.save(backup);
+        fileRepository.save(file);
     }
 }

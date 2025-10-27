@@ -1,9 +1,14 @@
 package com.sprint.hrbank_sb6_1.repository;
 
+import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.hrbank_sb6_1.domain.Backup;
-import com.sprint.hrbank_sb6_1.dto.SearchBackupRequest;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
+import com.sprint.hrbank_sb6_1.domain.BackupStatus;
+import com.sprint.hrbank_sb6_1.dto.request.SearchBackupRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,113 +19,122 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.sprint.hrbank_sb6_1.domain.QBackup.backup;
+
 @AllArgsConstructor
 public class BackupRepositoryImpl implements BackupRepositoryCustom {
-    private final EntityManager em;
+    private final JPAQueryFactory queryFactory;
 
-    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("startedAt", "endedAt", "status", "id");
-
-    private static class JpqlWhere {
-        final String clause;
-        final Map<String, Object> params;
-
-        JpqlWhere(String clause, Map<String, Object> params) {
-            this.clause = clause;
-            this.params = params;
-        }
-    }
-
-    // --- [헬퍼 메소드] 중복되는 WHERE 로직 추출 ---
-    private JpqlWhere buildDynamicWhereClause(SearchBackupRequest search) {
-        StringBuilder whereClause = new StringBuilder();
-        Map<String, Object> params = new HashMap<>();
-
-        // worker 부분일치
-        if (StringUtils.hasText(search.getWorker())) {
-            whereClause.append(" AND backup.worker LIKE :worker ");
-            params.put("worker", "%" + search.getWorker() + "%");
-        }
-        // status 완잔일치
-        if (search.getStatus() != null) {
-            whereClause.append(" AND backup.status = :status ");
-            params.put("status", search.getStatus());
-        }
-        // startedAtFrom 범위일치
-        if (search.getStartedAtFrom() != null) {
-            whereClause.append(" AND backup.startedAt >= :startedAtFrom ");
-            params.put("startedAtFrom", search.getStartedAtFrom());
-        }
-        // startedAtTo 범위일치
-        if (search.getStartedAtTo() != null) {
-            whereClause.append(" AND backup.startedAt <= :startedAtTo ");
-            params.put("startedAtTo", search.getStartedAtTo());
-        }
-
-        return new JpqlWhere(whereClause.toString(), params);
-    }
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("startedAt", "endedAt", "status");
 
     @Override
     public Slice<Backup> searchTasks(SearchBackupRequest search) {
 
-        JpqlWhere where = buildDynamicWhereClause(search);
-
-        StringBuilder sql = new StringBuilder("SELECT backup FROM Backup backup WHERE 1=1");
-        sql.append(where.clause);
-
-        // 커서 로직
-        if (StringUtils.hasText(search.getCursor()) && "startedAt".equals(search.getSortField())) {
-            LocalDateTime cursorValue = LocalDateTime.parse(search.getCursor());
-            if ("DESC".equalsIgnoreCase(search.getSortDirection())) {
-                // 내림차순
-                sql.append(" AND backup.startedAt < :cursorValue ");
-            } else {
-                // 오름차순
-                sql.append(" AND backup.startedAt > :cursorValue ");
-            }
-            where.params.put("cursorValue", cursorValue);
-        }
-
-        // 정렬
-        String sortField = "id";
-        if (StringUtils.hasText(search.getSortField()) && ALLOWED_SORT_FIELDS.contains(search.getSortField())) {
-            sortField = search.getSortField();
-        }
-        String sortDirection = "DESC";
-        if ("ASC".equalsIgnoreCase(search.getSortDirection())) {
-            sortDirection = "ASC";
-        }
-        sql.append(" ORDER BY backup.").append(sortField).append(" ").append(sortDirection);
-        sql.append(", backup.id DESC");
-
-        // 쿼리 생성, 파라미터/페이징 설정
-        TypedQuery<Backup> query = em.createQuery(sql.toString(), Backup.class);
-        where.params.forEach(query::setParameter);
-
-        //Size + 1 트릭 적용
         int requestSize = search.getSize();
-        query.setMaxResults(requestSize + 1);
 
-        List<Backup> content = query.getResultList();
+        List<Backup> content = queryFactory
+                .selectFrom(backup)
+                .where(
+                        workerContains(search),
 
-        //"Size + 1" 트릭으로 hasNext 계산
+                        cursorCondition(search)
+                ).orderBy(
+                        dynamicOrderBy(search)
+                )
+                .limit(requestSize+1)
+                .fetch();
+
         boolean hasNext = false;
         if (content.size() > requestSize) {
             hasNext = true;
-            content.remove(requestSize); // 마지막 (size + 1)번째 아이템은 리스트에서 제거
+            content.remove(requestSize);
         }
 
         Pageable pageable = PageRequest.of(0, requestSize);
-
         return new SliceImpl<>(content, pageable, hasNext);
-
-
     }
 
     @Override
     public long countTasks(SearchBackupRequest search) {
-        JpqlWhere where = buildDynamicWhereClause(search);
-        TypedQuery<Long> countQuery = em.createQuery("SELECT COUNT(backup) FROM Backup backup WHERE 1=1" + where.clause, Long.class);
-        where.params.forEach(countQuery::setParameter);
-        return countQuery.getSingleResult();
+        Long count = queryFactory
+                .select(backup.count())
+                .from(backup)
+                .where(
+                        workerContains(search)
+                )
+                .fetchOne();
+        return (count != null) ? count : 0L;
     }
+
+    private BooleanExpression workerContains(SearchBackupRequest search) {
+        return backup.isNotNull()
+                .and(workerContains(search.getWorker()))
+                .and(statusEquals(search.getStatus()))
+                .and(startedAtGoe(search.getStartedAtFrom()))
+                .and(startedAtLoe(search.getStartedAtTo()));
+    }
+
+    //사용자 부분일치
+    private BooleanExpression workerContains(String worker) {
+        return StringUtils.hasText(worker) ? backup.worker.contains(worker) : null;
+    }
+
+    //상태 완전일치
+    private BooleanExpression statusEquals(BackupStatus status) {
+        if (status == null) {return null;}
+        return StringUtils.hasText(String.valueOf(status)) ? backup.status.eq(status) : null;
+    }
+
+    //백업 시작 날짜 부터 범위일치
+    private BooleanExpression startedAtGoe(LocalDateTime from) {
+        return (from != null) ? backup.startedAt.goe(from) : null;
+    }
+
+    //백업 시작 날짜 까지 범위일치
+    private BooleanExpression startedAtLoe(LocalDateTime to) {
+        return (to != null) ? backup.startedAt.loe(to) : null;
+    }
+
+    //커서 WHERE 절 로작
+    private BooleanExpression cursorCondition(SearchBackupRequest  search) {
+        if(!StringUtils.hasText(search.getCursor())|| !"startAt".equals(search.getCursor())) {
+            return null;
+        }
+
+        LocalDateTime cursorValue = LocalDateTime.parse(search.getCursor());
+
+        if("DESC".equalsIgnoreCase(search.getSortDirection())){
+            return backup.startedAt.lt(cursorValue); // 내림차순
+        }else {
+            return backup.startedAt.gt(cursorValue); // 오름차순
+        }
+    }
+
+    //동적 ORDER BY 로직
+    private OrderSpecifier<?>[] dynamicOrderBy(SearchBackupRequest  search) {
+        String sortField = search.getSortField();
+        Order direction = "ASC".equalsIgnoreCase(search.getSortDirection()) ? Order.ASC : Order.DESC;
+
+        PathBuilder<Backup> entityPath = new PathBuilder<>(Backup.class, "backup");
+        Expression<? extends Comparable> primaryExpression;
+
+        if("startedAt".equals(sortField)) {
+            primaryExpression = entityPath.getDateTime("startedAt", LocalDateTime.class);
+        }else if("endedAt".equals(sortField)) {
+            primaryExpression = entityPath.getDateTime("endedAt", LocalDateTime.class);
+        }else if("status".equals(sortField)) {
+            primaryExpression = entityPath.getString("status");
+        } else {
+            sortField = "id";
+            primaryExpression = entityPath.getDateTime("id", Long.class);
+            return new OrderSpecifier[]{ new OrderSpecifier<>(direction, primaryExpression) };
+        }
+
+        OrderSpecifier<?> primaryOrder = new OrderSpecifier<>(direction,primaryExpression);
+
+        OrderSpecifier<?> secondaryOrder = new OrderSpecifier<>(direction, entityPath.getDateTime("id", Long.class));
+
+        return new OrderSpecifier[]{primaryOrder, secondaryOrder};
+    }
+
 }

@@ -21,9 +21,8 @@ public class ChangeLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ChangeLogStatus status;
+    private int status;
 
     @Lob
     @Column(nullable = false)
