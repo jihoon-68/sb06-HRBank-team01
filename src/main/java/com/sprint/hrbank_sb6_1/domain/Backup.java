@@ -1,6 +1,5 @@
 package com.sprint.hrbank_sb6_1.domain;
 
-import com.sprint.hrbank_sb6_1.backup.scheduled.domain.ScheduledBackupStatus;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -8,14 +7,12 @@ import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Setter
 public class Backup {
 
     @Id

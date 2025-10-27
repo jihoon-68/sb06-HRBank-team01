@@ -41,6 +41,6 @@ spring:
       org.hibernate.SQL: DEBUG            # ???? SQL ??
       org.hibernate.type.descriptor.sql: TRACE  # SQL? ????? ???? ? ??
 
-      backup:
-        schedule:
-          rate: 36000000 #자동 백업 시간 현재: 10분
+  backup:
+    schedule:
+      rate: 0 0/30 * * * * #자동 백업 시간 현재: 30분
