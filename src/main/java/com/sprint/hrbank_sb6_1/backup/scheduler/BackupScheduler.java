@@ -13,7 +13,7 @@ public class BackupScheduler {
 
     private final BackupService backupService;
 
-    @Scheduled(cron = "${backup.schedule.cron:0 * * * * *}")
+    @Scheduled(cron = "${spring.backup.schedule.rate}")
     public void executeBackup() {
         log.info("🔁 자동 백업 스케줄러 시작");
         try {

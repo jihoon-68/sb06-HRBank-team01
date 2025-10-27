@@ -71,18 +71,17 @@ public class BasicBackupService implements BackupService {
     public CursorPageResponseBackupDto GetAllBackups(SearchBackupRequest searchBackupRequest) {
         long totalCount = backupRepository.countTasks(searchBackupRequest);
         Slice<Backup> backupSlice = backupRepository.searchTasks(searchBackupRequest);
-        Slice<BackupDto> backupDtoSlice = backupSlice.map(backupMapper::toBackupDto);
 
         String backupStartTime =null;
         Long backId =null;
-        if(!backupDtoSlice.getContent().isEmpty()&&backupSlice.hasNext()) {
-            backupStartTime =  backupDtoSlice.getContent().get(0).getStartedAt().toString();
-            backId = backupDtoSlice.getContent().get(0).getId();
+        if(!backupSlice.getContent().isEmpty()&&backupSlice.hasNext()) {
+            backupStartTime =  backupSlice.getContent().get(0).getStartedAt().toString();
+            backId = backupSlice.getContent().get(0).getId();
         }
 
         CursorPageBackupDto cursorPageBackupDto = new CursorPageBackupDto(backupStartTime, backId,totalCount);
 
-        return backupPagingMapper.toCursorPageResponseBackupDto(backupDtoSlice,cursorPageBackupDto);
+        return backupPagingMapper.toCursorPageResponseBackupDto(backupSlice,cursorPageBackupDto);
 
     }
 
