@@ -2,7 +2,6 @@ package com.sprint.hrbank_sb6_1.service.basic;
 
 import com.sprint.hrbank_sb6_1.domain.Backup;
 import com.sprint.hrbank_sb6_1.domain.Employee;
-import com.sprint.hrbank_sb6_1.domain.File;
 import com.sprint.hrbank_sb6_1.event.BackupEvent;
 import com.sprint.hrbank_sb6_1.event.BackupIoEvent;
 import com.sprint.hrbank_sb6_1.repository.BackupRepository;
