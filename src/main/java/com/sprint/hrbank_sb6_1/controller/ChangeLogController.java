@@ -25,7 +25,7 @@ public class ChangeLogController {
     @GetMapping()
     public ResponseEntity<CursorPageResponseChangeLogDto> getChangeLogs(
         @RequestParam(required = false) String employeeNumber,
-        @RequestParam(required = false) String type,
+        @RequestParam(defaultValue = "0") int type,
         @RequestParam(required = false) String memo,
         @RequestParam(required = false) String ipAddress,
         @RequestParam(required = false) String atFrom,

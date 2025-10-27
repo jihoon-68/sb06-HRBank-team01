@@ -281,7 +281,7 @@ public class BasicEmployeeService implements EmployeeService {
             }
 
             String json = objectMapper.writeValueAsString(changeLogList);
-            Employee changeLogEmployee = changeLogStatus == ChangeLogStatus.DELETED ? null : after;
+            Employee changeLogEmployee = changeLogStatus.getDescription().equals("Deleted") ? null : after;
 
             ChangeLog changeLog = ChangeLog.builder()
                     .memo(memo)
@@ -289,7 +289,7 @@ public class BasicEmployeeService implements EmployeeService {
                     .address(ip)
                     .employee(changeLogEmployee)
                     .description(json)
-                    .status(changeLogStatus)
+                    .status(changeLogStatus.getCode())
                     .build();
 
             changeLogRepository.save(changeLog);

@@ -1,6 +1,7 @@
 package com.sprint.hrbank_sb6_1.dto;
 
 import com.sprint.hrbank_sb6_1.domain.ChangeLog;
+import com.sprint.hrbank_sb6_1.domain.ChangeLogStatus;
 import java.time.LocalDateTime;
 
 public record ChangeLogDto(
@@ -14,7 +15,7 @@ public record ChangeLogDto(
     public static ChangeLogDto from(ChangeLog changeLog) {
         return new ChangeLogDto(
             changeLog.getId(),
-            changeLog.getStatus().name(),
+            ChangeLogStatus.fromCode(changeLog.getStatus()).getDescription(),
             changeLog.getEmployee().getEmployeeNumber(),
             changeLog.getMemo(),
             changeLog.getAddress(),

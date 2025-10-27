@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 public interface ChangeLogRepositoryCustom {
     List<ChangeLog> searchChangeLogs(
         String employeeNumber,
-        ChangeLogStatus type,
+        int type,
         String memo,
         String ipAddress,
         LocalDateTime atFrom,
