@@ -16,7 +16,7 @@ public record ChangeLogDto(
         return new ChangeLogDto(
             changeLog.getId(),
             ChangeLogStatus.fromCode(changeLog.getStatus()).getDescription(),
-            changeLog.getEmployee().getEmployeeNumber(),
+            changeLog.getEmployee() != null ? changeLog.getEmployee().getEmployeeNumber() : null,
             changeLog.getMemo(),
             changeLog.getAddress(),
             changeLog.getAt()
