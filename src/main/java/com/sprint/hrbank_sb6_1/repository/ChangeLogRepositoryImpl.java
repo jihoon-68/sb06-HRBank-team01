@@ -68,7 +68,7 @@ public class ChangeLogRepositoryImpl implements ChangeLogRepositoryCustom{
         // Query 실행
         return queryFactory
             .selectFrom(c)
-            .join(c.employee, e).fetchJoin()
+            .leftJoin(c.employee, e).fetchJoin()
             .where(builder)
             .orderBy(orderSpecifier)
             .offset(pageable.getOffset())
