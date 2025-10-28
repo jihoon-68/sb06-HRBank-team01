@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: HRbank_sb6_1
+  servlet:
+    multipart:
+      maxFileSize: 10MB # ?? ??? ?? ??
+      maxRequestSize: 30MB  #
+
+  datasource:
+    url: jdbc:postgresql://${PGHOST}:5432/${POSTGRES_DB}
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # ?? ????? validate ?? none ??
+    show-sql: true        # ???? SQL ??. product ??? false
+    properties:
+      hibernate:
+        format_sql: true   # SQL ?? ?? ??
+        highlight_sql: true # (Hibernate 5.5+) ANSI ?? ??
+        use_sql_comments: true # JPQL -> SQL ?? ? ?? ??
+        # ??? ?????? ??(Dialect) ??
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false   # OSIV ???? (??? ????? ??? ??)
+
+  sql:
+    init:
+      mode: never   # schema.sql, data.sql ?? ?? (never, embedded, always)
+
+  hrbank:
+    storage:
+      local:
+        root-path: .files
+
+  backup:
+    schedule:
+      rate: 0 0/30 * * * * #자동 백업 시간 현재: 30분
+
+logging:
+  level:
+    org.hibernate.engine.jdbc.connection: DEBUG
+    com.zaxxer.hikari: DEBUG
+
